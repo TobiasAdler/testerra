@@ -1,0 +1,8 @@
+name: First Test
+on: push
+jobs:
+  my-job-1:
+    runs-on: ubuntu
+    steps:
+      - name: my-step-1
+        run: echo "Hello World!"
