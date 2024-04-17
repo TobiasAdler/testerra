@@ -2,7 +2,7 @@ name: First Test
 on: push
 jobs:
   my-job-1:
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     steps:
       - name: my-step-1
         run: echo "Hello World!"
