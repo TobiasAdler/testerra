@@ -26,6 +26,7 @@ jobs:
           ./gradlew clean compileJava compileTestJava buildReport
 
       - name: Prepare Status Tests
+        if: always()
         run: |
           cd integration-tests
           ../gradlew test -P pretest=true -D log4j2.configurationFile=src/test/resources/log4j2-pretest.xml
@@ -33,6 +34,7 @@ jobs:
           cp -r integration-tests/report-pretest-status/* integration-tests/report-pretest-status/
 
       - name: Prepare Report Tests 1
+        if: always()
         run: |
           cd integration-tests
           ../gradlew test -Pmodule=report-ng-tests \
@@ -43,6 +45,7 @@ jobs:
           cp -r report-ng-tests/src/test/resources/reports/report-generated-status/* report-ng-tests/src/test/resources/reports/report-generated-status/
 
       - name: Prepare Report Tests 2
+        if: always()
         run: |
           cd integration-tests
           ../gradlew test -Pmodule=report-ng-tests \
@@ -53,6 +56,7 @@ jobs:
           cp -r report-ng-tests/src/test/resources/reports/report-extended-status/* report-ng-tests/src/test/resources/reports/report-extended-status/
 
       - name: Run Tests
+        if: always()
         run: |
           ./gradlew clean test
       - name: Last step
