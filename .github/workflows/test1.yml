@@ -20,11 +20,13 @@ jobs:
           node-version: '20'
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3
-      - name: Build with Gradle
-        run: gradle clean compileJava compileTestJava buildReport
+      - name: Build Testerra
+        run: |
+          ls -la
+          ./gradle clean compileJava compileTestJava buildReport
       - name: Prepare Status Tests
         run: |
-          VAR_currentStage=$STAGE_NAME
+#          VAR_currentStage=$STAGE_NAME
           ./gradlew executeModuleTest \
           -Pmodule=integration-tests \
           -Pargs="-Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -Dtt.report.dir=report-pretest-status -DwithJacoco" \
@@ -33,7 +35,7 @@ jobs:
 
       - name: Prepare Report Tests 1
         run: |
-          VAR_currentStage=$STAGE_NAME
+#          VAR_currentStage=$STAGE_NAME
           ./gradlew executeModuleTest \
             -Pmodule=report-ng-tests \
             -Pargs="-Ppretest=true" \
@@ -42,7 +44,7 @@ jobs:
 
       - name: Prepare Report Tests 2
         run: |
-          VAR_currentStage=$STAGE_NAME
+#          VAR_currentStage=$STAGE_NAME
           ./gradlew executeModuleTest \
             -Pmodule=report-ng-tests \
             -Pargs="-PpretestExtended=true" \
