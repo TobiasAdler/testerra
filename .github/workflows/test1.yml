@@ -4,5 +4,13 @@ jobs:
   my-job-1:
     runs-on: ubuntu-latest
     steps:
-      - name: my-step-1
+      - name: First step
         run: echo "Hello World!"
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java
+      - name: Set up Node
+        uses: actions/setup-node@v4
+      - name: Last step
+        run: echo "End of workflow!"
