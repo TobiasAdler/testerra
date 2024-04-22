@@ -33,6 +33,7 @@ jobs:
           mkdir -p integration-tests/report-pretest-status
           cp -r integration-tests/report-pretest-status/* integration-tests/report-pretest-status/
       - name: Publish artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: testerra-report
