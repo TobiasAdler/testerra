@@ -26,7 +26,6 @@ jobs:
           ./gradle clean compileJava compileTestJava buildReport
       - name: Prepare Status Tests
         run: |
-#          VAR_currentStage=$STAGE_NAME
           ./gradlew executeModuleTest \
           -Pmodule=integration-tests \
           -Pargs="-Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -Dtt.report.dir=report-pretest-status -DwithJacoco" \
@@ -35,7 +34,6 @@ jobs:
 
       - name: Prepare Report Tests 1
         run: |
-#          VAR_currentStage=$STAGE_NAME
           ./gradlew executeModuleTest \
             -Pmodule=report-ng-tests \
             -Pargs="-Ppretest=true" \
@@ -44,7 +42,6 @@ jobs:
 
       - name: Prepare Report Tests 2
         run: |
-#          VAR_currentStage=$STAGE_NAME
           ./gradlew executeModuleTest \
             -Pmodule=report-ng-tests \
             -Pargs="-PpretestExtended=true" \
