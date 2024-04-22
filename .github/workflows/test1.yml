@@ -9,8 +9,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up JDK
-        uses: actions/setup-java
-      - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          cache: 'gradle'
+          java-version: '17'
+#      - name: Checkout Repo
+#        uses: actions/checkout@v4
+#      - name: Set up JDK
+#        uses: actions/setup-java
+#      - name: Set up Node
+#        uses: actions/setup-node@v4
       - name: Last step
         run: echo "End of workflow!"
