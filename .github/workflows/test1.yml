@@ -26,27 +26,30 @@ jobs:
           ./gradlew clean compileJava compileTestJava buildReport
       - name: Prepare Status Tests
         run: |
-          ./gradlew executeModuleTest \
-          -Pmodule=integration-tests \
+          ./gradlew test -Pmodule=integration-tests \
           -Pargs="-Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -Dtt.report.dir=report-pretest-status -DwithJacoco" \
           -PtestName="PreTest Status" \
           -PoutputDir="report-pretest-status"
+          mkdir -p integration-tests/report-pretest-status
+          cp -r integration-tests/report-pretest-status/* integration-tests/report-pretest-status/
 
       - name: Prepare Report Tests 1
         run: |
-          ./gradlew executeModuleTest \
-            -Pmodule=report-ng-tests \
+          ./gradlew test -Pmodule=report-ng-tests \
             -Pargs="-Ppretest=true" \
             -PtestName="PreTest ReportNG 1" \
             -PoutputDir="/src/test/resources/reports/report-generated-status"
+          mkdir -p report-ng-tests/src/test/resources/reports/report-generated-status
+          cp -r report-ng-tests/src/test/resources/reports/report-generated-status/* report-ng-tests/src/test/resources/reports/report-generated-status/
 
       - name: Prepare Report Tests 2
         run: |
-          ./gradlew executeModuleTest \
-            -Pmodule=report-ng-tests \
+          ./gradlew test -Pmodule=report-ng-tests \
             -Pargs="-PpretestExtended=true" \
             -PtestName="PreTest ReportNG 2" \
             -PoutputDir="/src/test/resources/reports/report-extended-status"
+          mkdir -p report-ng-tests/src/test/resources/reports/report-extended-status
+          cp -r report-ng-tests/src/test/resources/reports/report-extended-status/* report-ng-tests/src/test/resources/reports/report-extended-status/
 
       - name: Run Tests
         run: |
