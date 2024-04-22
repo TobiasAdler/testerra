@@ -18,5 +18,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
+#      - name: Build with Gradle
+#        run: ./gradlew build
+#        uses: gradle/gradle-build-action@v3
+#        with:
+#          arguments: chrome_headless --no-parallel --no-daemon --console=plain
       - name: Last step
         run: echo "End of workflow!"
