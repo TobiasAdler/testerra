@@ -27,7 +27,7 @@ jobs:
 
       - name: Prepare Status Tests
         run: |
-          cd integration-tests && gradle test -Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -Dtt.report.dir=report-pretest-status -DwithJacoco
+          ./gradlew test -Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -Dtt.report.dir=report-pretest-status -DwithJacoco
           mkdir -p integration-tests/report-pretest-status
           cp -r integration-tests/report-pretest-status/* integration-tests/report-pretest-status/
 
