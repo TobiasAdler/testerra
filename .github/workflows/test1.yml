@@ -36,22 +36,16 @@ jobs:
       - name: Prepare Report Tests 1
         if: always()
         run: |
-          cd integration-tests
-          ../gradlew test -Pmodule=report-ng-tests \
-            -Pargs="-Ppretest=true" \
-            -PtestName="PreTest ReportNG 1" \
-            -PoutputDir="/src/test/resources/reports/report-generated-status"
+          cd report-ng-tests
+          ../gradlew test -P pretest=true
           mkdir -p report-ng-tests/src/test/resources/reports/report-generated-status
           cp -r report-ng-tests/src/test/resources/reports/report-generated-status/* report-ng-tests/src/test/resources/reports/report-generated-status/
 
       - name: Prepare Report Tests 2
         if: always()
         run: |
-          cd integration-tests
-          ../gradlew test -Pmodule=report-ng-tests \
-            -Pargs="-PpretestExtended=true" \
-            -PtestName="PreTest ReportNG 2" \
-            -PoutputDir="/src/test/resources/reports/report-extended-status"
+          cd report-ng-tests
+          ../gradlew test -P pretestExtended=true
           mkdir -p report-ng-tests/src/test/resources/reports/report-extended-status
           cp -r report-ng-tests/src/test/resources/reports/report-extended-status/* report-ng-tests/src/test/resources/reports/report-extended-status/
 
