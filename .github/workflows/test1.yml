@@ -21,7 +21,7 @@ jobs:
       - name: Build Testerra
         run: |
           ls -la
-          gradle clean compileJava compileTestJava buildReport
+          ./gradlew clean compileJava compileTestJava buildReport
       - name: Prepare Status Tests
         run: |
           ./gradlew executeModuleTest \
