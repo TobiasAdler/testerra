@@ -4,6 +4,7 @@ jobs:
   my-job-1:
     runs-on: ubuntu-latest
     steps:
+      : # Set up the environment
       - name: First step
         run: echo "Hello World!"
       - name: Checkout Repository
@@ -24,12 +25,11 @@ jobs:
         run: |
           ls -la
           ./gradlew clean compileJava compileTestJava buildReport
+
+        : # Start testing
       - name: Prepare Status Tests
         run: |
-          ./gradlew test -Pmodule=integration-tests \
-          -Pargs="-Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -Dtt.report.dir=report-pretest-status -DwithJacoco" \
-          -PtestName="PreTest Status" \
-          -PoutputDir="report-pretest-status"
+          Cd integration-tests && gradle test -Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -Dtt.report.dir=report-pretest-status -DwithJacoco
           mkdir -p integration-tests/report-pretest-status
           cp -r integration-tests/report-pretest-status/* integration-tests/report-pretest-status/
 
