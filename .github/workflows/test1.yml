@@ -38,7 +38,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: testerra-report/report-pretest-status
+          name: report-pretest-status
           path: integration-tests/test-report
 
       - name: Prepare Report Tests 1
@@ -52,7 +52,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: testerra-report/report-test
+          name: report-test
           path: report-ng-tests/test-report
 
       - name: Prepare Report Tests 2
@@ -66,5 +66,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: testerra-report/report-test-2
+          name: report-test-2
           path: report-ng-tests/test-report
