@@ -26,6 +26,7 @@ jobs:
           ./gradlew clean compileJava compileTestJava buildReport
       - name: Prepare Status Tests
         run: |
+          cd integration-tests
           ./gradlew test -Pmodule=integration-tests \
           -Pargs="-Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -Dtt.report.dir=report-pretest-status -DwithJacoco" \
           -PtestName="PreTest Status" \
