@@ -6,19 +6,17 @@ jobs:
     steps:
       - name: First step
         run: echo "Hello World!"
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: 'zulu'
           cache: 'gradle'
           java-version: '17'
-#      - name: Checkout Repo
-#        uses: actions/checkout@v4
-#      - name: Set up JDK
-#        uses: actions/setup-java
-#      - name: Set up Node
-#        uses: actions/setup-node@v4
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - name: Last step
         run: echo "End of workflow!"
