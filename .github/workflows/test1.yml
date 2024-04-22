@@ -20,6 +20,8 @@ jobs:
           node-version: '20'
       - name: Make gradlew executable
         run: chmod +x ./gradlew
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
       - name: Build Testerra
         run: |
           ls -la
@@ -36,8 +38,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: testerra-report
-          path: integration-tests/test-report
+          name: testerra-report/report-pretest-status
+          path: integration-tests/report-pretest-status
 
       - name: Prepare Report Tests 1
         if: always()
@@ -46,6 +48,12 @@ jobs:
           ../gradlew test -P pretest=true
           mkdir -p report-ng-tests/src/test/resources/reports/report-generated-status
           cp -r report-ng-tests/src/test/resources/reports/report-generated-status/* report-ng-tests/src/test/resources/reports/report-generated-status/
+      - name: Publish artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testerra-report/report-test
+          path: integration-tests/report-test
 
       - name: Prepare Report Tests 2
         if: always()
@@ -54,3 +62,9 @@ jobs:
           ../gradlew test -P pretestExtended=true
           mkdir -p report-ng-tests/src/test/resources/reports/report-extended-status
           cp -r report-ng-tests/src/test/resources/reports/report-extended-status/* report-ng-tests/src/test/resources/reports/report-extended-status/
+      - name: Publish artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testerra-report/report-test-2
+          path: integration-tests/report-test-2
