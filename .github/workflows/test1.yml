@@ -1,7 +1,7 @@
 name: First Test
 on: push
 jobs:
-  my-job-1:
+  test-testerra:
     runs-on: ubuntu-latest
     steps:
       - name: First step
@@ -27,13 +27,15 @@ jobs:
 
       - name: Prepare Status Tests
         run: |
-          ./gradlew test -P pretest=true -D log4j2.configurationFile=src/test/resources/log4j2-pretest.xml
+          cd integration-tests
+          ../gradlew test -P pretest=true -D log4j2.configurationFile=src/test/resources/log4j2-pretest.xml
           mkdir -p integration-tests/report-pretest-status
           cp -r integration-tests/report-pretest-status/* integration-tests/report-pretest-status/
 
       - name: Prepare Report Tests 1
         run: |
-          ./gradlew test -Pmodule=report-ng-tests \
+          cd integration-tests
+          ../gradlew test -Pmodule=report-ng-tests \
             -Pargs="-Ppretest=true" \
             -PtestName="PreTest ReportNG 1" \
             -PoutputDir="/src/test/resources/reports/report-generated-status"
@@ -42,7 +44,8 @@ jobs:
 
       - name: Prepare Report Tests 2
         run: |
-          ./gradlew test -Pmodule=report-ng-tests \
+          cd integration-tests
+          ../gradlew test -Pmodule=report-ng-tests \
             -Pargs="-PpretestExtended=true" \
             -PtestName="PreTest ReportNG 2" \
             -PoutputDir="/src/test/resources/reports/report-extended-status"
