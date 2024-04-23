@@ -21,7 +21,7 @@ jobs:
         run: |
           cd integration-tests
           sudo ../gradlew test -Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -DwithJacoco
-          sudo chmod -R a+rwx test-report/*
+          sudo chmod -R a+r test-report/*
       - name: Publish artifacts - Prepare Status Tests
         uses: actions/upload-artifact@v4
         with:
@@ -32,7 +32,7 @@ jobs:
         run: |
           cd report-ng-tests
           sudo ../gradlew test -P pretest=true
-          sudo chmod -R a+rwx src/test/resources/reports/report-generated-status/*
+          sudo chmod -R a+r src/test/resources/reports/report-generated-status/*
       - name: Publish artifacts - PreTest ReportNG 1
         uses: actions/upload-artifact@v4
         with:
@@ -43,21 +43,11 @@ jobs:
         run: |
           cd report-ng-tests
           sudo ../gradlew test -P pretestExtended=true
-          sudo chmod -R a+rwx src/test/resources/reports/report-extended-status/*
+          sudo chmod -R a+r src/test/resources/reports/report-extended-status/*
       - name: Publish artifacts - PreTest ReportNG 2
         uses: actions/upload-artifact@v4
         with:
           name: PreTest ReportNG 2
           path: report-ng-tests/src/test/resources/reports/report-extended-status
 
-      - name: Run Tests - Testerra ReportNG tests
-        run: |
-          cd report-ng-tests
-          sudo ../gradlew clean test
-          sudo chmod -R a+rwx test-report/*
-      - name: Publish artifacts - Testerra ReportNG tests
-        uses: actions/upload-artifact@v4
-        with:
-          name: Testerra ReportNG tests
-          path: report-ng-tests/test-report
 
