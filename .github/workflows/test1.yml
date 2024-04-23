@@ -32,7 +32,7 @@ jobs:
           cd ..
           pwd
           mkdir -p integration-tests/report-pretest-status
-          cp -r integration-tests/test-report/* integration-tests/report-pretest-status/
+          sudo cp -r integration-tests/test-report/* integration-tests/report-pretest-status/
 
       - name: Info
         if: always()
@@ -42,4 +42,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: report-pretest-status
-          path: integration-tests/test-report
+          path: integration-tests/report-pretest-status
