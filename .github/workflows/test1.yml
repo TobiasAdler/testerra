@@ -3,10 +3,6 @@ on: push
 jobs:
   test-testerra:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        gradle-task: [ 'check' ]
     steps:
       - name: First step
         run: echo "Hello World!"
@@ -27,9 +23,7 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Build Testerra
-        run: |
-          ls -la
-          ./gradlew clean compileJava compileTestJava buildReport
+        run: ./gradlew clean compileJava compileTestJava buildReport
 
       - name: Prepare Status Tests
         run: |
@@ -38,8 +32,10 @@ jobs:
           mkdir -p integration-tests/report-pretest-status
           cp -r integration-tests/report-pretest-status/* integration-tests/report-pretest-status/
       - name: Info
+        if: always()
         run: pwd
       - name: Publish artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: report-pretest-status
