@@ -58,30 +58,41 @@ jobs:
           name: PreTest ReportNG 2
           path: report-ng-tests/src/test/resources/reports/report-extended-status
 
-      - name: Run Tests
+      - name: Run Tests - Testerra Integration tests
         run: |
           cd integration-tests
           sudo ../gradlew clean test
-          cd ..
-          sudo chmod -R a+rwx integration-tests/test-report/*
-          sudo chmod -R a+rwx mail-connector/test-report/*
-          sudo chmod -R a+rwx bup/test-report/*
-          sudo chmod -R a+rwx report-ng-tests/test-report/*
+          sudo chmod -R a+rwx test-report/*
       - name: Publish artifacts - Testerra Integration tests
         uses: actions/upload-artifact@v4
         with:
           name: Testerra Integration tests
           path: integration-tests/test-report
+      - name: Run Tests - Testerra MailConnector
+        run: |
+          cd mail-connector
+          sudo ../gradlew clean test
+          sudo chmod -R a+rwx test-report/*
       - name: Publish artifacts - Testerra MailConnector
         uses: actions/upload-artifact@v4
         with:
           name: Testerra MailConnector
           path: mail-connector/test-report
+      - name: Run Tests - Testerra BUP tests
+        run: |
+          cd bup
+          sudo ../gradlew clean test
+          sudo chmod -R a+rwx test-report/*
       - name: Publish artifacts - Testerra BUP tests
         uses: actions/upload-artifact@v4
         with:
           name: Testerra BUP tests
           path: bup/test-report
+      - name: Run Tests - Testerra ReportNG tests
+        run: |
+          cd report-ng-tests
+          sudo ../gradlew clean test
+          sudo chmod -R a+rwx test-report/*
       - name: Publish artifacts - Testerra ReportNG tests
         uses: actions/upload-artifact@v4
         with:
