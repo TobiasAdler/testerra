@@ -33,7 +33,7 @@ jobs:
           pwd
           mkdir -p integration-tests/report-pretest-status
           sudo cp -r integration-tests/test-report/* integration-tests/report-pretest-status/
-          chmod -R u=rw integration-tests/report-pretest-status/*
+          chmod -R u=rw integration-tests/report-pretest-status
 
       - name: Info
         if: always()
