@@ -61,7 +61,7 @@ jobs:
       - name: Run Tests
         run: |
           cd integration-tests
-          sudo ./gradlew clean test > test-log.txt 2>&1
+          sudo ../gradlew clean test
           cd ..
           sudo chmod -R a+rwx integration-tests/test-report/*
           sudo chmod -R a+rwx mail-connector/test-report/*
