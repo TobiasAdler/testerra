@@ -29,8 +29,6 @@ jobs:
         run: |
           cd integration-tests
           sudo ../gradlew test -Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -Dtt.report.dir=report-pretest-status -DwithJacoco
-          mkdir -p report-pretest-status
-          cp -r report-pretest-status/* report-pretest-status/
       - name: Info
         if: always()
         run: pwd
@@ -39,4 +37,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: report-pretest-status
-          path: integration-tests/test-report
+          path: integration-tests/report-pretest-status
