@@ -34,30 +34,26 @@ jobs:
           sudo cp -r integration-tests/test-report/* integration-tests/report-pretest-status/
           sudo chmod -R a+rwx integration-tests/report-pretest-status/*
       - name: Publish artifacts
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pretest-status
           path: integration-tests/report-pretest-status
 
       - name: Prepare Report Tests 1
-        if: always()
         run: |
           cd report-ng-tests
           sudo ../gradlew test -P pretest=true
           cd ..
           mkdir -p report-ng-tests/report-tests-1
-          sudo cp -r report-ng-tests/* report-ng-tests/report-tests-1/
+          sudo cp -r report-ng-tests/test-report/* report-ng-tests/report-tests-1/
           sudo chmod -R a+rwx report-ng-tests/report-tests-1/*
       - name: Publish artifacts
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pretest-reportng-1
           path: report-ng-tests/report-tests-1
 
       - name: Prepare Report Tests 2
-        if: always()
         run: |
           cd report-ng-tests
           sudo ../gradlew test -P pretestExtended=true
@@ -66,7 +62,6 @@ jobs:
           sudo cp -r report-ng-tests/test-report/* report-ng-tests/report-tests-2/
           sudo chmod -R a+rwx report-ng-tests/report-tests-2/*
       - name: Publish artifacts
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pretest-reportng-2
