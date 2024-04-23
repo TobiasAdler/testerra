@@ -4,8 +4,6 @@ jobs:
   test-testerra:
     runs-on: ubuntu-latest
     steps:
-      - name: First step
-        run: echo "Hello World!"
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Set up JDK
@@ -51,4 +49,15 @@ jobs:
         with:
           name: PreTest ReportNG 2
           path: report-ng-tests/src/test/resources/reports/report-extended-status
+
+      - name: Run Tests - Testerra ReportNG tests
+        run: |
+          cd report-ng-tests
+          sudo ../gradlew clean test
+          sudo chmod -R a+rwx test-report/*
+      - name: Publish artifacts - Testerra ReportNG tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: Testerra ReportNG tests
+          path: report-ng-tests/test-report
 
