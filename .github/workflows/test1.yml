@@ -29,20 +29,18 @@ jobs:
         run: |
           cd integration-tests
           sudo ../gradlew test -Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -DwithJacoco
-          cd ..
-          mkdir -p integration-tests/report-pretest-status
-          sudo cp -r integration-tests/test-report/* integration-tests/report-pretest-status/
-          sudo chmod -R a+rwx integration-tests/report-pretest-status/*
+          sudo chmod -R a+rwx test-report/*
       - name: Publish artifacts
         uses: actions/upload-artifact@v4
         with:
           name: pretest-status
-          path: integration-tests/report-pretest-status
+          path: integration-tests/test-report
 
       - name: Prepare Report Tests 1
         run: |
           cd report-ng-tests
           sudo ../gradlew test -P pretest=true
+          sudo chmod -R a+rwx src/test/resources/reports/report-generated-status/*
       - name: Publish artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -53,6 +51,7 @@ jobs:
         run: |
           cd report-ng-tests
           sudo ../gradlew test -P pretestExtended=true
+          sudo chmod -R a+rwx src/test/resources/reports/report-extended-status/*
       - name: Publish artifacts
         uses: actions/upload-artifact@v4
         with:
