@@ -30,10 +30,10 @@ jobs:
           cd integration-tests
           sudo ../gradlew test -Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -DwithJacoco
           sudo chmod -R a+rwx test-report/*
-      - name: Publish artifacts
+      - name: Publish artifacts - Prepare Status Tests
         uses: actions/upload-artifact@v4
         with:
-          name: pretest-status
+          name: PreTest Status
           path: integration-tests/test-report
 
       - name: Prepare Report Tests 1
@@ -41,10 +41,10 @@ jobs:
           cd report-ng-tests
           sudo ../gradlew test -P pretest=true
           sudo chmod -R a+rwx src/test/resources/reports/report-generated-status/*
-      - name: Publish artifacts
+      - name: Publish artifacts - PreTest ReportNG 1
         uses: actions/upload-artifact@v4
         with:
-          name: pretest-reportng-1
+          name: PreTest ReportNG 1
           path: report-ng-tests/src/test/resources/reports/report-generated-status
 
       - name: Prepare Report Tests 2
@@ -52,8 +52,38 @@ jobs:
           cd report-ng-tests
           sudo ../gradlew test -P pretestExtended=true
           sudo chmod -R a+rwx src/test/resources/reports/report-extended-status/*
-      - name: Publish artifacts
+      - name: Publish artifacts - PreTest ReportNG 2
         uses: actions/upload-artifact@v4
         with:
-          name: pretest-reportng-2
+          name: PreTest ReportNG 2
           path: report-ng-tests/src/test/resources/reports/report-extended-status
+
+      - name: Run Tests
+        run: |
+          cd integration-tests
+          sudo ./gradlew clean test > test-log.txt 2>&1
+          cd ..
+          sudo chmod -R a+rwx integration-tests/test-report/*
+          sudo chmod -R a+rwx mail-connector/test-report/*
+          sudo chmod -R a+rwx bup/test-report/*
+          sudo chmod -R a+rwx report-ng-tests/test-report/*
+      - name: Publish artifacts - Testerra Integration tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: Testerra Integration tests
+          path: integration-tests/test-report
+      - name: Publish artifacts - Testerra MailConnector
+        uses: actions/upload-artifact@v4
+        with:
+          name: Testerra MailConnector
+          path: mail-connector/test-report
+      - name: Publish artifacts - Testerra BUP tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: Testerra BUP tests
+          path: bup/test-report
+      - name: Publish artifacts - Testerra ReportNG tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: Testerra ReportNG tests
+          path: report-ng-tests/test-report
