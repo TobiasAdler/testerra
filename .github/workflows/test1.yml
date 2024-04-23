@@ -28,7 +28,7 @@ jobs:
       - name: Prepare Status Tests
         run: |
           cd integration-tests
-          sudo ../gradlew test -P pretest=true -D log4j2.configurationFile=src/test/resources/log4j2-pretest.xml -D tt.report.dir=report-pretest-status -D withJacoco
+          sudo ../gradlew test -P pretest=true -D log4j2.configurationFile=src/test/resources/log4j2-pretest.xml -Dtt.report.dir=report-pretest-status -DwithJacoco
       - name: Info
         if: always()
         run: pwd
