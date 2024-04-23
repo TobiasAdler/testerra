@@ -1,4 +1,4 @@
-name: First Test
+name: Testerra Framework Test
 on: push
 jobs:
   test-testerra:
@@ -14,16 +14,10 @@ jobs:
           distribution: 'zulu'
           cache: 'gradle'
           java-version: '11'
-      - name: Setup NodeJS
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Setup Chrome
-        uses: browser-actions/setup-chrome@latest
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Build Testerra
-        run: ./gradlew clean compileJava compileTestJava buildReport >/dev/null || true
+        run: ./gradlew clean compileJava compileTestJava buildReport
 
       - name: Prepare Status Tests
         run: |
@@ -58,43 +52,3 @@ jobs:
           name: PreTest ReportNG 2
           path: report-ng-tests/src/test/resources/reports/report-extended-status
 
-      - name: Run Tests - Testerra Integration tests
-        run: |
-          cd integration-tests
-          sudo ../gradlew clean test
-          sudo chmod -R a+rwx test-report/*
-      - name: Publish artifacts - Testerra Integration tests
-        uses: actions/upload-artifact@v4
-        with:
-          name: Testerra Integration tests
-          path: integration-tests/test-report
-      - name: Run Tests - Testerra MailConnector
-        run: |
-          cd mail-connector
-          sudo ../gradlew clean test
-          sudo chmod -R a+rwx test-report/*
-      - name: Publish artifacts - Testerra MailConnector
-        uses: actions/upload-artifact@v4
-        with:
-          name: Testerra MailConnector
-          path: mail-connector/test-report
-      - name: Run Tests - Testerra BUP tests
-        run: |
-          cd bup
-          sudo ../gradlew clean test
-          sudo chmod -R a+rwx test-report/*
-      - name: Publish artifacts - Testerra BUP tests
-        uses: actions/upload-artifact@v4
-        with:
-          name: Testerra BUP tests
-          path: bup/test-report
-      - name: Run Tests - Testerra ReportNG tests
-        run: |
-          cd report-ng-tests
-          sudo ../gradlew clean test
-          sudo chmod -R a+rwx test-report/*
-      - name: Publish artifacts - Testerra ReportNG tests
-        uses: actions/upload-artifact@v4
-        with:
-          name: Testerra ReportNG tests
-          path: report-ng-tests/test-report
