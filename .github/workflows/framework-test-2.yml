@@ -1,7 +1,7 @@
 name: Testerra Framework Test
-on: pull_request
+on: push
 jobs:
-  test-testerra:
+  test-reportng:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -50,6 +50,33 @@ jobs:
           name: PreTest ReportNG 2
           path: report-ng-tests/src/test/resources/reports/report-extended-status
 
+      - name: Run Tests - Testerra ReportNG tests
+        run: |
+          cd report-ng-tests
+          sudo ../gradlew clean test
+          sudo chmod -R a+r test-report/*
+      - name: Publish artifacts - Testerra ReportNG tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: Testerra ReportNG tests
+          path: report-ng-tests/test-report
+
+  test-testerra:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          cache: 'gradle'
+          java-version: '11'
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+      - name: Build Testerra
+        run: ./gradlew clean compileJava compileTestJava buildReport
+
 
       - name: Run Tests - Testerra Integration tests
         run: |
@@ -83,15 +110,3 @@ jobs:
         with:
           name: Testerra BUP tests
           path: bup/test-report
-
-      - name: Run Tests - Testerra ReportNG tests
-        run: |
-          cd report-ng-tests
-          sudo ../gradlew clean test
-          sudo chmod -R a+r test-report/*
-      - name: Publish artifacts - Testerra ReportNG tests
-        uses: actions/upload-artifact@v4
-        with:
-          name: Testerra ReportNG tests
-          path: report-ng-tests/test-report
-
