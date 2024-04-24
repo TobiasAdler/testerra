@@ -22,6 +22,53 @@ jobs:
           cd integration-tests
           sudo ../gradlew test -Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -DwithJacoco
           sudo chmod -R a+r test-report/*
+
+      - name: Prepare Report Tests 1
+        run: |
+          cd report-ng-tests
+          sudo ../gradlew test -P pretest=true
+          sudo chmod -R a+r src/test/resources/reports/report-generated-status/*
+
+      - name: Prepare Report Tests 2
+        run: |
+          cd report-ng-tests
+          sudo ../gradlew test -P pretestExtended=true
+          sudo chmod -R a+r src/test/resources/reports/report-extended-status/*
+
+
+      - name: Run Tests - Testerra ReportNG tests
+        run: |
+          cd report-ng-tests
+          sudo ../gradlew clean test
+          sudo chmod -R a+r test-report/*
+      - name: Publish artifacts - Testerra ReportNG tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: Testerra ReportNG tests
+          path: report-ng-tests/test-report
+
+
+  test-testerra:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          cache: 'gradle'
+          java-version: '11'
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+      - name: Build Testerra
+        run: ./gradlew clean compileJava compileTestJava buildReport
+
+      - name: Prepare Status Tests
+        run: |
+          cd integration-tests
+          sudo ../gradlew test -Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -DwithJacoco
+          sudo chmod -R a+r test-report/*
       - name: Publish artifacts - Prepare Status Tests
         uses: actions/upload-artifact@v4
         with:
@@ -49,39 +96,6 @@ jobs:
         with:
           name: PreTest ReportNG 2
           path: report-ng-tests/src/test/resources/reports/report-extended-status
-
-      - name: Run Tests - Testerra ReportNG tests
-        run: |
-          cd report-ng-tests
-          sudo ../gradlew clean test
-          sudo chmod -R a+r test-report/*
-      - name: Publish artifacts - Testerra ReportNG tests
-        uses: actions/upload-artifact@v4
-        with:
-          name: Testerra ReportNG tests
-          path: report-ng-tests/test-report
-
-  test-testerra:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          cache: 'gradle'
-          java-version: '11'
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-      - name: Build Testerra
-        run: ./gradlew clean compileJava compileTestJava buildReport
-
-      - name: Prepare Status Tests
-        run: |
-          cd integration-tests
-          sudo ../gradlew test -Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -DwithJacoco
-          sudo chmod -R a+r test-report/*
 
 
       - name: Run Tests - Testerra Integration tests
