@@ -34,9 +34,7 @@ jobs:
         with:
           test_results: integration-tests/test-report/report-ng
           keep_reports: 2
-          gh_pages: gh_pages
-          subfolder: docs
-          tool_name: cucumber
+          gh_pages: master
           workflow_name: ${{ github.workflow }}
-          env: QA
+          env: pretest_status
 
