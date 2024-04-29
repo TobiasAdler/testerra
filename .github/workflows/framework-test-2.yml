@@ -1,51 +1,6 @@
-name: Testerra Framework Test
+name: testerra-framework-test
 on: push
 jobs:
-  test-reportng:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          cache: 'gradle'
-          java-version: '11'
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-      - name: Build Testerra
-        run: ./gradlew clean compileJava compileTestJava buildReport
-
-      - name: Prepare Status Tests
-        run: |
-          cd integration-tests
-          sudo ../gradlew test -Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -DwithJacoco
-          sudo chmod -R a+r test-report/*
-
-      - name: Prepare Report Tests 1
-        run: |
-          cd report-ng-tests
-          sudo ../gradlew test -P pretest=true
-          sudo chmod -R a+r src/test/resources/reports/report-generated-status/*
-
-      - name: Prepare Report Tests 2
-        run: |
-          cd report-ng-tests
-          sudo ../gradlew test -P pretestExtended=true
-          sudo chmod -R a+r src/test/resources/reports/report-extended-status/*
-
-
-      - name: Run Tests - Testerra ReportNG tests
-        run: |
-          cd report-ng-tests
-          sudo ../gradlew clean test
-          sudo chmod -R a+r test-report/*
-      - name: Publish artifacts - Testerra ReportNG tests
-        uses: actions/upload-artifact@v4
-        with:
-          name: Testerra ReportNG tests
-          path: report-ng-tests/test-report
 
 
   test-testerra:
@@ -83,7 +38,7 @@ jobs:
           gh_pages: gh_pages
           subfolder: reports
           workflow_name: ${{ github.workflow }}
-          env: PreTest Status
+          env: PreTest_Status
 
 
       - name: Prepare Report Tests 1
@@ -105,7 +60,7 @@ jobs:
           gh_pages: gh_pages
           subfolder: reports
           workflow_name: ${{ github.workflow }}
-          env: PreTest ReportNG 1
+          env: PreTest_ReportNG_1
 
 
       - name: Prepare Report Tests 2
@@ -127,7 +82,7 @@ jobs:
           gh_pages: gh_pages
           subfolder: reports
           workflow_name: ${{ github.workflow }}
-          env: PreTest ReportNG 2
+          env: PreTest_ReportNG_2
 
 
       - name: Run Tests - Testerra Integration tests
@@ -149,7 +104,7 @@ jobs:
           gh_pages: gh_pages
           subfolder: reports
           workflow_name: ${{ github.workflow }}
-          env: Testerra Integration tests
+          env: Testerra_Integration_tests
 
 
       - name: Run Tests - Testerra MailConnector
@@ -171,7 +126,7 @@ jobs:
           gh_pages: gh_pages
           subfolder: reports
           workflow_name: ${{ github.workflow }}
-          env: Testerra MailConnector
+          env: Testerra_MailConnector
 
 
       - name: Run Tests - Testerra BUP tests
@@ -193,4 +148,4 @@ jobs:
           gh_pages: gh_pages
           subfolder: reports
           workflow_name: ${{ github.workflow }}
-          env: Testerra BUP tests
+          env: Testerra_BUP_tests
