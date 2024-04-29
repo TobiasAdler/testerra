@@ -17,23 +17,21 @@ jobs:
       - name: Build Testerra
         run: ./gradlew clean compileJava compileTestJava buildReport
 
-      - name: Prepare Status Tests
-        run: |
-          cd integration-tests
-          sudo ../gradlew test -Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -DwithJacoco
-          sudo chmod -R a+r test-report/*
 
-      - name: Prepare Report Tests 1
-        run: |
-          cd report-ng-tests
-          sudo ../gradlew test -P pretest=true
-          sudo chmod -R a+r src/test/resources/reports/report-generated-status/*
+      - uses: actions/download-artifact@master
+        with:
+          name: PreTest Status
+          path: integration-tests/test-report
 
-      - name: Prepare Report Tests 2
-        run: |
-          cd report-ng-tests
-          sudo ../gradlew test -P pretestExtended=true
-          sudo chmod -R a+r src/test/resources/reports/report-extended-status/*
+      - uses: actions/download-artifact@master
+        with:
+          name: PreTest ReportNG 1
+          path: report-ng-tests/src/test/resources/reports/report-generated-status
+
+      - uses: actions/download-artifact@master
+        with:
+          name: PreTest ReportNG 2
+          path: report-ng-tests/src/test/resources/reports/report-extended-status
 
 
       - name: Run Tests - Testerra ReportNG tests
