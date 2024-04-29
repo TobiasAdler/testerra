@@ -1,5 +1,5 @@
 name: Testerra Framework Test
-on: pull_request
+on: push
 jobs:
   test-reportng:
     runs-on: ubuntu-latest
@@ -75,6 +75,17 @@ jobs:
           name: PreTest Status
           path: integration-tests/test-report
 
+      - name: Publish PreTest Status report
+        uses: PavanMudigonda/html-reporter-github-pages@v1.3
+        with:
+          test_results: integration-tests/test-report
+          keep_reports: 10
+          gh_pages: gh_pages
+          subfolder: reports
+          workflow_name: ${{ github.workflow }}
+          env: PreTest Status
+
+
       - name: Prepare Report Tests 1
         run: |
           cd report-ng-tests
@@ -86,6 +97,17 @@ jobs:
           name: PreTest ReportNG 1
           path: report-ng-tests/src/test/resources/reports/report-generated-status
 
+      - name: Publish PreTest ReportNG 1 report
+        uses: PavanMudigonda/html-reporter-github-pages@v1.3
+        with:
+          test_results: report-ng-tests/src/test/resources/reports/report-generated-status
+          keep_reports: 10
+          gh_pages: gh_pages
+          subfolder: reports
+          workflow_name: ${{ github.workflow }}
+          env: PreTest ReportNG 1
+
+
       - name: Prepare Report Tests 2
         run: |
           cd report-ng-tests
@@ -96,6 +118,16 @@ jobs:
         with:
           name: PreTest ReportNG 2
           path: report-ng-tests/src/test/resources/reports/report-extended-status
+
+      - name: Publish PreTest ReportNG 2 report
+        uses: PavanMudigonda/html-reporter-github-pages@v1.3
+        with:
+          test_results: report-ng-tests/src/test/resources/reports/report-extended-status
+          keep_reports: 10
+          gh_pages: gh_pages
+          subfolder: reports
+          workflow_name: ${{ github.workflow }}
+          env: PreTest ReportNG 2
 
 
       - name: Run Tests - Testerra Integration tests
@@ -109,6 +141,17 @@ jobs:
           name: Testerra Integration tests
           path: integration-tests/test-report
 
+      - name: Publish Testerra Integration tests report
+        uses: PavanMudigonda/html-reporter-github-pages@v1.3
+        with:
+          test_results: integration-tests/test-report
+          keep_reports: 10
+          gh_pages: gh_pages
+          subfolder: reports
+          workflow_name: ${{ github.workflow }}
+          env: Testerra Integration tests
+
+
       - name: Run Tests - Testerra MailConnector
         run: |
           cd mail-connector
@@ -120,6 +163,17 @@ jobs:
           name: Testerra MailConnector
           path: mail-connector/test-report
 
+      - name: Publish Testerra MailConnector report
+        uses: PavanMudigonda/html-reporter-github-pages@v1.3
+        with:
+          test_results: mail-connector/test-report
+          keep_reports: 10
+          gh_pages: gh_pages
+          subfolder: reports
+          workflow_name: ${{ github.workflow }}
+          env: Testerra MailConnector
+
+
       - name: Run Tests - Testerra BUP tests
         run: |
           cd bup
@@ -130,3 +184,13 @@ jobs:
         with:
           name: Testerra BUP tests
           path: bup/test-report
+
+      - name: Publish Testerra BUP tests report
+        uses: PavanMudigonda/html-reporter-github-pages@v1.3
+        with:
+          test_results: bup/test-report
+          keep_reports: 10
+          gh_pages: gh_pages
+          subfolder: reports
+          workflow_name: ${{ github.workflow }}
+          env: Testerra BUP tests
