@@ -35,8 +35,8 @@ jobs:
           test_results: integration-tests/test-report
           keep_reports: 2
           gh_pages: gh_pages
-          subfolder: reports
+          subfolder: docs
+          tool_name: cucumber
           workflow_name: ${{ github.workflow }}
-          report_url: https://github.com/TobiasAdler/testerra/deployments/github-pages
-          env: pretest_status
+          env: QA
 
