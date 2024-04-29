@@ -1,5 +1,5 @@
 name: testerra-framework-test
-on: push
+on: workflow_dispatch
 jobs:
 
   test-reportng:
@@ -11,6 +11,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
+          cache: 'gradle'
           java-version: '11'
       - name: Make gradlew executable
         run: chmod +x ./gradlew
@@ -57,6 +58,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
+          cache: 'gradle'
           java-version: '11'
       - name: Make gradlew executable
         run: chmod +x ./gradlew
