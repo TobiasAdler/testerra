@@ -32,7 +32,7 @@ jobs:
       - name: Publish PreTest Status report
         uses: PavanMudigonda/html-reporter-github-pages@v1.3
         with:
-          test_results: integration-tests/test-report
+          test_results: integration-tests/test-report/report-ng
           keep_reports: 2
           gh_pages: gh_pages
           subfolder: docs
