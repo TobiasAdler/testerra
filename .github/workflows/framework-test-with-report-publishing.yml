@@ -1,5 +1,5 @@
 name: testerra-framework-test-2
-on: workflow_dispatch
+on: push
 jobs:
 
 
