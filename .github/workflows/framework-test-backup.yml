@@ -1,4 +1,4 @@
-name: Testerra Framework Test
+name: testerra-framework-test-backup
 on: workflow_dispatch
 jobs:
 

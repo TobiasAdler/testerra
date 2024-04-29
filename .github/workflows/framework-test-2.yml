@@ -1,4 +1,4 @@
-name: testerra-framework-test
+name: testerra-framework-test-2
 on: push
 jobs:
 

@@ -1,4 +1,4 @@
-name: testerra-framework-test
+name: testerra-framework-test-4
 on: workflow_dispatch
 jobs:
 
