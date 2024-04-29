@@ -1,51 +1,7 @@
 name: testerra-framework-test-2
-on: push
+on: workflow_dispatch
 jobs:
 
-  test-reportng:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '11'
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-      - name: Build Testerra
-        run: ./gradlew clean compileJava compileTestJava buildReport
-
-      - name: Prepare Status Tests
-        run: |
-          cd integration-tests
-          sudo ../gradlew test -Ppretest=true -Dlog4j2.configurationFile=src/test/resources/log4j2-pretest.xml -DwithJacoco -Dtt.browser=chromeHeadless -Dtt.selenium.server.host= -Dtt.selenium.server.url=
-          sudo chmod -R a+r test-report/*
-
-      - name: Prepare Report Tests 1
-        run: |
-          cd report-ng-tests
-          sudo ../gradlew test -P pretest=true -Dtt.browser=chromeHeadless -Dtt.selenium.server.host= -Dtt.selenium.server.url=
-          sudo chmod -R a+r src/test/resources/reports/report-generated-status/*
-
-      - name: Prepare Report Tests 2
-        run: |
-          cd report-ng-tests
-          sudo ../gradlew test -P pretestExtended=true -Dtt.browser=chromeHeadless -Dtt.selenium.server.host= -Dtt.selenium.server.url=
-          sudo chmod -R a+r src/test/resources/reports/report-extended-status/*
-
-
-      - name: Run Tests - Testerra ReportNG tests
-        run: |
-          cd report-ng-tests
-          sudo ../gradlew clean test -Dtt.browser=chromeHeadless -Dtt.selenium.server.host= -Dtt.selenium.server.url=
-          sudo chmod -R a+r test-report/*
-      - name: Publish artifacts - Testerra ReportNG tests
-        uses: actions/upload-artifact@v4
-        with:
-          name: Testerra ReportNG tests
-          path: report-ng-tests/test-report
 
 
   test-testerra:
@@ -74,13 +30,62 @@ jobs:
           name: PreTest Status
           path: integration-tests/test-report
 
-      - name: Publish PreTest Status report
-        uses: PavanMudigonda/html-reporter-github-pages@v1.3
-        with:
-          test_results: integration-tests/test-report
-          keep_reports: 2
-          gh_pages: gh_pages
-          subfolder: reports
-          workflow_name: ${{ github.workflow }}
-          env: pretest_status
 
+      - name: Prepare Report Tests 1
+        run: |
+          cd report-ng-tests
+          sudo ../gradlew test -P pretest=true -Dtt.browser=chromeHeadless -Dtt.selenium.server.host= -Dtt.selenium.server.url=
+          sudo chmod -R a+r src/test/resources/reports/report-generated-status/*
+      - name: Publish artifacts - PreTest ReportNG 1
+        uses: actions/upload-artifact@v4
+        with:
+          name: PreTest ReportNG 1
+          path: report-ng-tests/src/test/resources/reports/report-generated-status
+
+
+      - name: Prepare Report Tests 2
+        run: |
+          cd report-ng-tests
+          sudo ../gradlew test -P pretestExtended=true -Dtt.browser=chromeHeadless -Dtt.selenium.server.host= -Dtt.selenium.server.url=
+          sudo chmod -R a+r src/test/resources/reports/report-extended-status/*
+      - name: Publish artifacts - PreTest ReportNG 2
+        uses: actions/upload-artifact@v4
+        with:
+          name: PreTest ReportNG 2
+          path: report-ng-tests/src/test/resources/reports/report-extended-status
+
+
+      - name: Run Tests - Testerra Integration tests
+        run: |
+          cd integration-tests
+          sudo ../gradlew clean test -Dtt.browser=chromeHeadless -Dtt.selenium.server.host= -Dtt.selenium.server.url=
+          sudo chmod -R a+r test-report/*
+      - name: Publish artifacts - Testerra Integration tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: Testerra Integration tests
+          path: integration-tests/test-report
+
+
+      - name: Run Tests - Testerra MailConnector
+        run: |
+          cd mail-connector
+          sudo ../gradlew clean test -Dtt.browser=chromeHeadless -Dtt.selenium.server.host= -Dtt.selenium.server.url=
+          sudo chmod -R a+r test-report/*
+      - name: Publish artifacts - Testerra MailConnector
+        uses: actions/upload-artifact@v4
+        with:
+          name: Testerra MailConnector
+          path: mail-connector/test-report
+
+
+      - name: Run Tests - Testerra BUP tests
+        run: |
+          cd bup
+          sudo ../gradlew clean test -Dtt.browser=chromeHeadless -Dtt.selenium.server.host= -Dtt.selenium.server.url=
+          sudo chmod -R a+r test-report/*
+      - name: Publish artifacts - Testerra BUP tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: Testerra BUP tests
+          path: bup/test-report
