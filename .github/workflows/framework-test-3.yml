@@ -70,17 +70,17 @@ jobs:
         run: ./gradlew clean compileJava compileTestJava buildReport
 
 
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v4
         with:
           name: PreTest Status
           path: integration-tests/test-report
 
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v4
         with:
           name: PreTest ReportNG 1
           path: report-ng-tests/src/test/resources/reports/report-generated-status
 
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v4
         with:
           name: PreTest ReportNG 2
           path: report-ng-tests/src/test/resources/reports/report-extended-status
@@ -116,17 +116,17 @@ jobs:
         run: ./gradlew clean compileJava compileTestJava buildReport
 
 
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v4
         with:
           name: PreTest Status
           path: integration-tests/test-report
 
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v4
         with:
           name: PreTest ReportNG 1
           path: report-ng-tests/src/test/resources/reports/report-generated-status
 
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v4
         with:
           name: PreTest ReportNG 2
           path: report-ng-tests/src/test/resources/reports/report-extended-status
