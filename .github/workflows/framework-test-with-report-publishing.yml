@@ -37,5 +37,6 @@ jobs:
           gh_pages: gh_pages
           subfolder: reports
           workflow_name: ${{ github.workflow }}
+          report_url: https://github.com/TobiasAdler/testerra/deployments/github-pages
           env: pretest_status
 
