@@ -24,7 +24,7 @@
 
 ## `framework-test-backup.yml`
 * workflow for testing the `html-reporter-github-pages` action
-* does not work at the moment
+* does not work at the moment, error in console: `gh: Not Found (HTTP 404)`
 
 ## `framework-test-with-report-publishing.yml`
 
