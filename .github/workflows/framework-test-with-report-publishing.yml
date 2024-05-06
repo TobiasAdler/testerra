@@ -34,7 +34,7 @@ jobs:
         with:
           test_results: integration-tests/test-report/report-ng
           keep_reports: 2
-          gh_pages: master
+          gh_pages: gh_pages
           workflow_name: ${{ github.workflow }}
           env: pretest_status
 
