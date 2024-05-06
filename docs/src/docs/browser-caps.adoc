@@ -1,0 +1,11 @@
+= Browser capabilities
+
+You can customize your WebDriver session by setting capabilities in the following ways:
+
+- Global capabilities that affect every WebDriver session created and can be set by <<User agent configuration>>
+- <<Request capabilities>> that affect only WebDrivers for a given request
+
+When creating a new WebDriver, these capabilities get merged together in this exact order.
+
+include::browsercaps/setting-browser-caps.adoc[leveloffset=+1]
+include::browsercaps/proxy-setup.adoc[leveloffset=+1]

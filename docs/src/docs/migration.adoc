@@ -1,0 +1,575 @@
+= Migration from Testerra 1
+
+The main goal for re-inventing the GuiElement API was at first, to provide a better user experience for
+implementing tests scripts in the role of a Test Engineer.
+
+Automated testing on web pages is hard, especially on large enterprise environments we address with Testerra.
+And yes, we know the trouble what happens when tests (suddenly) fails.
+
+As an Test Engineer, you may want expressive info messages for bugs in the System under Test or to keep your tests up to date to the
+specification. You may need easy to understand test code and a robust extensible Page Object model for large test environments
+by keeping the full potential of a Software Developer?
+
+The new Testerra API provides it all.
+
+If you're a developer and want to know how the new API works, you can jump straight to <<The internals>> or just proceed with the next chapter to get an overview.
+
+== Page object changes
+
+When implementing the `PageFactoryProvider` interface, you get an `PAGE_FACTORY` instance within your class.
+
+```java
+import eu.tsystems.mms.tic.testframework.testing.PageFactoryProvider;
+
+class MyTest extends TesterraTest implements PageFactoryProvider, WebDriverManagerProvider {
+
+    @Test
+    public void test_MyPageTest() {
+        MyPage page = PAGE_FACTORY.createPage(MyPage.class);
+
+        // Or using a different WebDriver
+        MyPage page = PAGE_FACTORY.createPage(MyPage.class, WEB_DRIVER_MANAGER.getWebDriver());
+    }
+}
+```
+
+but you can instantiate pages within pages more easily:
+```java
+class MyPage extends Page {
+    public AnotherPage navigateToAnotherPage() {
+        return createPage(AnotherPage.class);
+    }
+}
+```
+
+[NOTE]
+.Using the static `PageFactory` is now `@deprecated`
+====
+```java
+MyPage page = PageFactory.create(MyPage.class, WebDriverManager.getWebDriver());
+```
+====
+
+[NOTE]
+.Passing variables to the Page constructor is now `@deprecated`
+====
+```java
+MyPage page = PageFactory.create(
+    MyPage.class,
+    WebDriverManager.getWebDriver(),
+    new PageVariables()
+);
+```
+====
+
+[CAUTION]
+.Constructor instantiation of Pages is prohibited!
+====
+```java
+MyPage page = new MyPage(WebDriverManager.getWebDriver());
+```
+====
+
+=== Components pattern
+The new standard way to implement Sub Pages aka Components is now
+```java
+public class MyForm extends AbstractComponent<MyForm> {
+    public MyForm(UiElement rootElement) {
+        super(rootElement);
+    }
+}
+```
+Instantiate components
+```java
+class MyPage extends Page {
+    private MyForm form = createComponent(MyForm.class, find(By.tagName("form")));
+}
+```
+
+=== Implicit Element checks
+
+The standard way of implicit GuiElement checks is now
+```java
+class MyPage extends Page {
+    @Check
+    private UiElement uiElement = findById(42);
+}
+```
+
+[CAUTION]
+.Performing explicit page checks is prohibited!
+====
+```java
+class MyPage extends Page {
+    public MyPage(WebDriver webDriver) {
+        super(webDriver);
+        checkPage(); <1>
+    }
+}
+
+MyPage page = PAGE_FACTORY.create(MyPage.class);
+page.checkPage(); <2>
+```
+<1> Calling `checkPage()` as `protected` member is prohibited
+<2> Calling `checkPage()` as `public` member is prohibited
+====
+
+== Responsive PageFactory
+
+The responsive page factory features have been removed from the default implementation. To use it anyway, you need to inject in in your <<Modules>> configuration.
+
+[source,java]
+----
+import eu.tsystems.mms.tic.testframework.pageobjects.internal.ResponsivePageFactory;
+
+public class MyModule extends AbstractModule {
+    protected void configure() {
+        bind(PageFactory.class).to(ResponsivePageFactory.class).in(Scopes.SINGLETON);
+    }
+}
+----
+
+== Element creation changes
+
+The new standard way to instantiate GuiElements is now
+```java
+class MyPage extends Page {
+    private UiElement uiElement = findById(42);
+    private UiElement uiElement = find(By.xpath("//div[1]"));
+}
+```
+
+[NOTE]
+.Constructor instantiation of GuiElements is now `@deprecated`
+====
+```java
+class MyPage extends Page {
+    private GuiElement guiElement = new GuiElement(driver, By.xpath("//div[1]"));
+}
+```
+====
+
+For descendant elements
+```java
+class MyPage extends Page {
+    private UiElement parent = findById(42);
+    private UiElement sub = parent.find(By.xpath("//div[1]"));
+}
+```
+
+[NOTE]
+.`getSubElement` is now `@deprecated`
+====
+```java
+class MyPage extends Page {
+    private GuiElement parent = new GuiElement(By.id(42), driver);
+    private GuiElement sub = parent.getSubElement(By.xpath("//div[1]"));
+}
+```
+====
+
+List elements
+```java
+UiElement anchors = find(By.tagName("a"));
+
+anchors.expect().foundElements().is(3); <1>
+UiElementList<UiElement> list = anchors.list();
+list.first().expect().value(Attribute.TITLE).is("StartPage"); <2>
+list.get(1).expect().value(Attribute.TITLE).is("About Us"); <3>
+list.last().expect().value(Attribute.TITLE).is("Contact"); <4>
+
+list.forEach(anchor -> anchor.expect().value(Attribute.HREF).startsWith("https")); <5>
+```
+
+[NOTE]
+.GuiElement lists are now `@deprecated`
+====
+```java
+GuiElement anchors = new GuiElement(driver, By.tagName("a"));
+
+Assert.assertEquals(anchors.getNumberOfFoundElements(), 3); <1>
+
+List<GuiElement> list = anchor.getList();
+list.get(0).asserts().assertAttributeValue("title", "StartPage"); <2>
+list.get(1).asserts().assertAttributeValue("title", "About Us"); <3>
+list.get(list.size()-1).asserts().assertAttributeValue("title", "Contact"); <4>
+
+list.forEach(anchor -> Assert.assertTrue(anchor.getAttribute("href").startsWith("https"))); <5>
+```
+====
+For elements in frames
+```java
+class MyPage extends Page {
+    private UiElement frame = find(By.tagName("frame")); <1>
+    private UiElement uiElement = frame.findById(14); <2>
+}
+```
+
+[CAUTION]
+.Passing frames to the constructor is *not supported* anymore.
+====
+```java
+class MyPage extends Page {
+    private GuiElement frame = new GuiElement(By.tagName("frame"), driver); <1>
+    private GuiElement guiElement = new GuiElement(By.id(14), driver, frame); <2>
+}
+```
+====
+
+== Assertion changes
+
+=== Element assertions
+
+The new standard way to perform assertions on elements like Pages and GuiElements is now
+
+[source,java]
+----
+uiElement.expect().displayed(true); <1>
+uiElement.expect().value().contains("Hallo Welt").is(true); <2>
+----
+[NOTE]
+.Using the GuiElement assertions is now `@deprecated`
+====
+[source,java]
+----
+guiElement.asserts().assertIsDisplayed(); <1>
+guiElement.asserts().assertAttributeContains("value", "Hallo Welt"); <2>
+----
+====
+
+Perform decisions on occurrence with the `waitFor` prefix.
+```
+if (uiElement.waitFor().displayed(true)) {
+    // Optional element became visible
+}
+```
+[NOTE]
+.Using the GuiElement waits is now `@deprecated`
+====
+```java
+if (guiElement.waits().waitForIsDisplayed()) {
+}
+```
+====
+
+Support of more features through consistent assertion API
+```java
+uiElement.expect().css("display").is("none"); <1>
+uiElement.expect().text()
+    .map(value -> value.toLowerCase()) <2>
+    .matches("^hello\\s.orld") <3>
+    .is(true);
+```
+<1> Perform assertions on the element's CSS properties
+<2> Map values
+<3> Regular expression assertions
+
+Custom failure messages
+```java
+uiElement.expect().displayed().is(true, "Element is displayed");
+```
+
+=== Page assertions
+
+Assert that a text is visible on a page
+
+[source,java]
+----
+page.expect().url().endsWith("index.html").is(true); <1>
+
+class MyPage extends Page {
+    public void checkIfPageContainsText(String text) {
+        this.getFinder()
+            .findDeep(XPath.from("*").text().contains(text))
+            .expect().displayed(true); <2>
+    }
+}
+----
+[NOTE]
+.Using the text assertions is now `@deprecated`
+====
+[source,java]
+----
+Assert.assertTrue(page.getWebDriver().getCurrentUrl().endsWith("index.html")); <1>
+page.assertIsTextDisplayed("You see me"); <2>
+----
+====
+
+=== Screenshot based Assertions
+The new standard way to perform screenshot based assertions is now
+```java
+uiElement.expect().screenshot().pixelDistance("ElementReference").isLowerThan(1);
+page.expect().screenshot().pixelDistance("PageReference").isBetween(0, 10);
+```
+
+Add screenshot to the report
+```java
+page.screenshotToReport();
+```
+[NOTE]
+.Using the static `UITestUtils` is now `@deprecated`
+====
+```java
+UITestUtils.takeScreenshot(page.getWebDriver(), true);
+```
+====
+
+=== Layout based Assertions
+To check if a element is beside another element
+```java
+UiElement left = find(By.id("left"));
+UiElement right = find(By.id("right"));
+
+left.expect().bounds().leftOf(right).is(true);
+left.expect().bounds().intersects(right).is(false);
+```
+Elements aligned to the same right
+```java
+UiElement top = find(By.id("top"));
+UiElement bottom = find(By.id("bottom"));
+
+top.expect().bounds().fromRight().toRightOf(bottom).is(0);
+```
+Element contains another element
+```java
+UiElement body = find(By.tagName("body"));
+UiElement nav = parent.find(By.tagName("nav"));
+
+body.expect().bounds().contains(nav).is(true);
+```
+
+== New Control API
+
+With the `TestController` API, you are able to control your test flow during runtime. Like timeouts, assertion handling and retry intervals.
+The `Control` instance is availabe as soon you implement the `TestControllerProvider` interface.
+
+```java
+import eu.tsystems.mms.tic.testframework.testing.TestControllerProvider;
+
+class MyTest implements TestControllerProvider {
+}
+```
+
+=== Collected Assertions
+
+The new standard way to collect assertions of elements in tests or pages is now
+```java
+CONTROL.collectAssertions(() -> uiElement.expect().displayed(true));
+```
+
+For many elements or pages
+```java
+CONTROL.collectAssertions(() -> {
+    MyPage page = PAGE_FACTORY.create(MyPage.class);
+    page.expect().title().is("TestPage");
+    uiElement.expect().value().contains("Hello");
+});
+```
+
+For custom assertions using `AssertProvider`
+```java
+CONTROL.collectAssertions(() -> {
+    String data = loadSomeData();
+    ASSERT.assertEquals(data, "Hello World", "some data");
+});
+```
+
+For other test methods
+```java
+@Test
+public void test_CollectEverything() {
+    CONTROL.collectAssertions(() -> test_TestSomething());
+}
+```
+
+[NOTE]
+.Using the static `AssertCollector` is now `@deprecated`
+====
+```java
+AssertCollector.assertTrue(false);
+```
+====
+
+[NOTE]
+.Using the GuiElement's assert collector is now `@deprecated`
+====
+```java
+guiElement.assertCollector().assertIsDisplayed();
+```
+====
+
+[NOTE]
+.Forcing standard assertions is now `@deprecated`
+====
+```java
+page.forceGuiElementStandardAsserts();
+```
+====
+
+[NOTE]
+.Setting collected assertions by default is now `@deprecated`
+====
+```properties
+tt.guielement.default.assertcollector=true
+```
+====
+
+=== Optional Assertions
+
+The new standard way for optional assertions works like <<Collected Assertions>>
+```java
+CONTROL.optionalAssertions(() -> uiElement.expect().displayed(true));
+```
+
+[NOTE]
+.Using the static `NonFunctionalAssert` is now `@deprecated`
+====
+```java
+NonFunctionalAssert.assertTrue(false);
+```
+====
+
+[NOTE]
+.Using the GuiElement's non functional asserts are now `@deprecated`
+====
+```java
+guiElement.nonFunctionalAsserts().assertIsDisplayed();
+```
+====
+
+== Timeouts and Retry API
+
+=== @Check timeouts
+
+The new standard way for setting GuiElement timeouts on `@Check` is now
+
+```java
+class MyPage extends Page {
+    @Check(timeout = 1)
+    private UiElement uiElement;
+}
+```
+[NOTE]
+.Setting and restoring explicit timeouts on the GuiElement is now `@deprecated`
+====
+```java
+guiElement.setTimeoutInSeconds(1);
+guiElement.restoreDefaultTimeout();
+```
+====
+For the whole Page
+```java
+@PageOptions(elementTimeoutInSeconds = 1)
+class MyPage extends Page {...}
+```
+[NOTE]
+.Setting explicit timeouts on the Page is now `@deprecated`
+====
+```java
+page.setElementTimeoutInSeconds(1);
+```
+====
+
+Override during runtime
+```java
+CONTROL.withTimeout(1, () -> uiElement.expect().displayed(true));
+```
+
+For many elements
+```java
+CONTROL.withTimeout(1, () -> {
+    MyPage page = PAGE_FACTORY.create(MyPage.class);
+    page.expect().title().is("TestPage");
+    uiElement.expect().value().contains("Hello");
+});
+```
+
+For other test methods
+```java
+@Test
+public void test_TestSomething_fast() {
+    CONTROL.withTimeout(1, () -> test_TestSomething());
+}
+```
+
+[NOTE]
+.Setting timeouts using static `POConfig` was removed!
+====
+```java
+POConfig.setThreadLocalUiElementTimeoutInSeconds(1);
+POConfig.setUiElementTimeoutInSeconds(1);
+POConfig.removeThreadLocalUiElementTimeout();
+```
+====
+
+== Modul migration
+
+We want to make Testerra more SOLID. Thats why we finally introduced Dependency Injection via. Google Guice.
+
+To enable you `ModuleHook` for v2, you need to extend this class from `AbstractModule`.
+
+[source,java]
+----
+import com.google.inject.AbstractModule;
+import eu.tsystems.mms.tic.testframework.hooks.ModuleHook;
+
+public class MyModuleHook extends AbstractModule implements ModuleHook {
+}
+----
+
+== Removed features
+
+* The `CSVTestDataReader` module was removed. Please use http://opencsv.sourceforge.net/#reading_into_beans[OpenCSV library] instead. It is more flexible as `CSVTestDataReader` could ever be.
+* `AssertUtils` were removed. Please use `ASSERT` from `AssertProvider`
+* From old `GuiElement` the `assertLayout()` was removed. Please use `uiElement.expects().bounds()...`
+
+== The internals
+
+This chapter explains how the new API works internally.
+
+=== Everything is timed, but once
+Every assertions is performed multiple times with a maximum timeout of {element_timeout_seconds}.
+If this timeout has reached, the assertion will finally fail.
+
+But there is only one timeout for each assertion now. No more implicit timeouts on sub method calls like `getWebElement()`, `isPresent()` etc.
+
+This is what an assertion internally does, when you perform `uiElement.expect().text().contains("Something")`.
+
+. Find web element using WebDriver
+. Check if element is present
+. Retrieve the text of the element
+. If the text does not contain "Something", start over with 1.
+. Otherwise when the timeout has reached, an assertion error message will be displayed that the
+text of the element you're looking for doesn't contain the string "Something".
+
+=== More consistence, less complexity
+
+There will be only one interface for everything you need in a manner of
+an easy to read fluent API. It is not too abstract like TestNG Assert, and not to technically like AssertJ.
+
+The new interface will always act exactly like you expect to, no matter in which context you are.
+You don't have to decide which method you should use. The standard way will be the best fit for most cases. Let the framework handle the workarrounds for you.
+
+=== Strict Page Object pattern
+
+Testerra was built with the Page Object pattern in mind. The new API makes it easier for your team, to keep you on track
+makes it harder to break out, even if your project contains hundreds of Pages and thousands of Tests.
+
+The new components extension allows you to implement page objects like a web developer would do, by separating
+functionality into reusable components.
+
+=== Smaller codebase and less boilerplate
+The API provides abstract assertion implementations for several properties.
+
+. `StringAssertion` allows you to perform assertions on strings like `contains("Something")`
+. `QuantityAssertion` allows you to perform assertions on quantified values like `isBetween(-2,3)`
+. `BinaryAssertion` allows to assert if an value is boolean or a string that represents a boolean value with `is(true)`
+
+These generic assertions are used in many other assertions and supports a hierarchical order.
+This is what the hierarchy looks like when you perform `uiElement.screenshot().file().extension().is("png")`
+
+. Take a screenshot and return a `ScreenshotAssertion`
+. Return a generic `FileAssertion` with the taken screenshot file
+. Return a generic `StringAssertion` with the given file name extension
+
+This implementation helps to keep the internal assertion code small, easy extensible and maintainable.

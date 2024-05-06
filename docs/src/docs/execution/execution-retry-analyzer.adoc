@@ -1,0 +1,130 @@
+= Retry analyzer
+include::../properties/property-attributes.adoc[]
+
+Testerra provides an adjustable mechanism to automatically retry failed tests.
+
+The default retry count is `1`. Each failed method is executed exactly one more time, when matching the <<Specific retries, retry criteria>>.
+Retried methods are shown in the section `Retried` of the report.
+
+You can change the default with the following property.
+
+.test.properties
+[source, properties, subs="attributes"]
+----
+{failed_tests_max_retries}=1
+----
+
+NOTE: The retry mechanism always ignores testcases with a valid Fails annotation.
+
+[#Retry]
+== Specific retry count for test methods
+
+You can change the retry count for specific test methods.
+
+[source, java]
+----
+@Test()
+@Retry(maxRetries = 2)
+public void testMethod() {
+    // ...
+}
+----
+
+== Default retries
+
+The following default retry analyzers are registered from modules:
+
+* `driver-ui` registeres `WebDriverRetryAnalyzer` which retries tests on specific internal WebDriver exceptions they look like temporary communication problems.
+* `driver-ui-desktop` registeres `SeleniumRetryAnalyzer` which retries tests on general Selenium communication problems with requested Desktop user agents:
+** `org.openqa.selenium.json.JsonException`
+** `org.openqa.selenium.remote.UnreachableBrowserException`
+
+== Specific retries
+
+Testerra can also retry failed methods when matching certain criteria.
+The filtering process contains of checks of classes and messages matching the thrown Exception, which are set within the test.properties file.
+
+.test.properties
+[source, properties, subs="attributes"]
+----
+# Set additional classes that engage a retry,
+{failed_tests_if_throwable_classes}=java.sql.SQLRecoverableException
+
+# Set additional messages of Throwable that engage a retry,
+{failed_tests_if_throwable_messages}=failed to connect, error communicating with database
+----
+
+== Customize retry behaviour
+
+For further adjustment additional analyzers can be registered expanding the default behaviour.
+
+.Defining AdditionalRetryAnalyzer for `InstantiationException`
+[source, java]
+----
+// custom Retryanalyzers need to implement the functional interface AdditionalRetryAnalyzer
+public class InstantiationExceptionRetryAnalyzer implements AdditionalRetryAnalyzer {
+
+    final String message = "failed instantiation";
+
+    @Override
+    public Optional<Throwable> analyzeThrowable(Throwable throwable) {
+        String tMessage = throwable.getMessage();
+        if (throwable instanceof InstantiationException) {
+            if (tMessage != null) {
+                final String tMessageLC = tMessage.toLowerCase();
+                boolean match = tMessageLC.contains(message);
+                if (match) {
+                    return Optional.of(throwable);
+                }
+            }
+        }
+
+        return Optional.empty();
+    }
+}
+----
+
+.Register your retry analyzer
+[source, java]
+----
+public class AbstractTest extends TesterraTest {
+
+    static {
+        // register the additional Analyzer,
+        // which checks for "InstantiationException" and the message "failed instantiation"
+        RetryAnalyzer.registerAdditionalRetryAnalyzer(new InstantiationExceptionRetryAnalyzer());
+    }
+
+}
+----
+
+[#NoRetry]
+== @NoRetry
+With this annotation the Retry Analyzer won't retry these methods if previously failed. This is characteristically shown in the report by the badge `NoRetry`.
+
+You can customize the `NoRetry` annotation with the  attributes `name` and `color`.
+
+.Possible attributes for the `NoRetry` annotation
+[cols="2,5a",options="header"]
+|===
+| Attribute | Description
+| name | Changes the shown text in the report. Default is `No Retry`
+| color | Change the background color of the shown text. Default is `grey`. +
+Values need to be valid for HTML colors like:
+
+* name of the color, e.g. red
+* RGB values, e.g. rgb(255, 236, 139)
+* RGBA values, e.g. rgba(252, 156, 249, 0.75)
+* HSL values, e.g. hsl(217, 97%, 57%)
+* Hex values, e.g. #57c0ff
+|===
+
+.An example with customization of `NoRetry`
+[source, java]
+----
+@Test()
+@NoRetry(name = "No retry because it's not allowed.", color="rgb(255, 236, 139)")
+public void testMethod() {
+    ...
+}
+----

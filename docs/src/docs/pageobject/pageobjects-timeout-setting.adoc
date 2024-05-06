@@ -1,0 +1,13 @@
+= Timeout Setting
+
+The checks are performed with a timeout. The default timeout is set by the `{element_timeout_seconds}` property.
+
+With the following annotation, the check can be optimized for all UiElements during page instantiation:
+[source,java]
+----
+@PageOptions(elementTimeoutInSeconds = 60)
+public class ExamplePage extends Page {
+	// insert your code
+}
+
+----

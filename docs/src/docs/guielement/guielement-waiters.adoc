@@ -1,0 +1,18 @@
+= Waiters
+
+In testing practice the test automation code must tolerate delays caused e.g. by page loading or javascript activities when checking conditions on UiElements.
+
+If the condition (which is checked continuously) is met within the timeout
+then the wait methods return true.
+
+Otherwise, after the timeout has passed they return false without any further
+action or assertion.
+
+[source,java]
+----
+boolean result;
+result = element.waitFor().displayed(boolean);
+
+// Overrides preconfigured internal timeout
+result = element.waitFor(int seconds).displayed(boolean);
+----

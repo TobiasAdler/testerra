@@ -1,0 +1,230 @@
+= Creation
+
+== Create default UiElement
+
+For every UiElement you need an implementation of the `UiElementFinder` interface (like <<PageObjects>>) and a locator (https://seleniumhq.github.io/selenium/docs/api/java/org/openqa/selenium/By.html[Selenium docs]).
+
+[source,java]
+----
+UiElement myElement = find(By.id("elementId"));
+UiElement button1 = find(By.name("button"));
+UiElement textOutputField = find(By.xpath("//p[@id='99']"));
+----
+
+IMPORTANT: A GuiElement always points to the first element found by the given locator. Even when your locator would return multiple elements, it just represents one. You can make your <<Locate unique elements, locators to force uniqueness>> or use <<Element lists, element lists>>.
+
+== Create SubElements
+
+The `UiElement` also implements `UiElementFinder`. Elements will only be searched in the DOM tree below the given parent element on which the method was called.
+
+[source,java]
+----
+UiElement upper = find(By.name("upperElement"));
+
+// Create the sub elements
+UiElement lower = upper.find(By.name("lowerElement"));
+UiElement lower = upper.find(By.xpath(".//p[@id='element']")); <1>
+UiElement lower = upper.find(By.xpath("//p[@id='element']")); <2>
+UiElement lower = upper.find(By.xpath("./p[@id='element']")); <3>
+----
+<1> Find any matching descendant
+<2> Corrects the selector prefix to './/'
+<3> Find any matching child
+
+
+== Implement UiElementFinder
+
+When you don't want to use the PageObject pattern, you can instantiate an `UiElementFinder` on your own.
+
+[source,java]
+----
+import eu.tsystems.mms.tic.testframework.pageobjects.UiElementFinder;
+import eu.tsystems.mms.tic.testframework.testing.TesterraTest;
+import eu.tsystems.mms.tic.testframework.testing.UiElementFinderFactoryProvider;
+import eu.tsystems.mms.tic.testframework.testing.WebDriverManagerProvider;
+
+class MyTest extends TesterraTest implements
+    UiElementFinderFactoryProvider,
+    WebDriverManagerProvider
+{
+    protected UiElementFinder createFinder() {
+        return UI_ELEMENT_FINDER_FACTORY.create(WEB_DRIVER_MANAGER.getWebDriver());
+    }
+
+    @Test
+    public void test() {
+        UiElementFinder finder = createFinder();
+        UiElement myElement = finder.find(By.id("elementId"));
+        UiElement button1 = finder.find(By.name("button"));
+        UiElement textOutputField = finder.find(By.xpath("//p[@id='99']"));
+    }
+}
+----
+
+== Advanced UiElement locating
+
+The `UiElementFinder` extends the `LocatorFactoryProvider` interface, which provides a `LOCATE` factory that supports more features than standard Selenium `By`.
+
+=== Locate unique elements
+
+If you want to make sure, that your element is unique.
+
+[source,java]
+----
+UiElement myElement = find(LOCATE.by(By.id("elementId")).unique());
+----
+
+This will throw an exception, if not exact one WebElement has been found.
+
+=== Locate displayed items only
+
+[source,java]
+----
+UiElement myElement = find(LOCATE.by(By.xpath(".//button")).displayed());
+----
+
+=== Prepared xpath expressions
+
+Using prepared expressions makes complex selectors more readable.
+
+[source,java]
+----
+PreparedLocator byText = LOCATE.prepare("//button[text()='%s'])");
+PreparedLocator byClass = LOCATE.prepare("//%s[contains(@class, '%s')][%d]");
+
+UiElement loginButton = find(byText.with("Login"));
+UiElement logoutButton = find(byClass.with("button", "btn-logout", 1));
+----
+
+=== Filtering elements
+
+You can also filter elements during find.
+
+[source,java]
+----
+Locator byText = LOCATE.by(By.xpath("//button"))
+                    .filter(webElement -> webElement.getText().equals("Open again"));
+
+UiElement buttonContainsText = find(byText);
+----
+
+=== Default locator configurator
+
+When you want to preconfigure all locators in the current thread, you can use
+[source,java]
+----
+LOCATE.setThreadLocalConfigurator(locator -> {
+   // Configure your locator here
+});
+----
+
+=== GuiElements inside frames
+== UiElements inside frames
+
+Accessing WebElements inside frames requires changing the active frame before any action. UiElements do that automatically as long you identify every `<frame>` or `<iframe>` as own element.
+
+[source,java]
+----
+UiElement frame1 = find(By.id("frame1"));
+
+// frame2 is child of frame1
+UiElement frame2 = frame1.find(By.id("frame2"));
+
+// target is child of frame2 which is child of frame1,
+UiElement target = frame2.find(By.id("target"));
+----
+
+And easier way is to use the `findDeep` method, which search for the element recursive in the frame hierarchy every time.
+[source,java]
+----
+// in this case the frames are searched recurse automatically
+UiElement target = findDeep(By.id("target"));
+----
+
+//
+//== GuiElement by image
+//
+//You can also define GuiElements defined by a snippet from a screenshot. Testerra tries to locator the image on the viewport and looking for the surrounding webelement.
+//
+//[source,java]
+//----
+//
+// //The second parameter for TesterraBy.image() needs a Url object to the image
+//GuiElement byimage = new GuiElement(driver,
+//        TesterraBy.image(driver, ClassLoader.getSystemResource("gui-elements/button.png")));
+//----
+//
+//It is recommended to locator the images in `src/main/resources` and create the Url object via `ClassLoader.getSystemResource()`.
+
+
+== Element lists
+
+The UiElement is like a pointer to the first element of the given locator. But if you want to retrieve a list of all found elements by the given locator, you can use the `UiElementList` like the following.
+
+[source,html]
+----
+<div>First</div>
+<div>Second</div>
+<div>Third</div>
+----
+
+[source,java]
+----
+UiElement div = find(By.tagName("div"));
+div.list().first().expect().text("First");
+div.list().last().expect().text("Third");
+----
+
+They can also be iterated and streamed.
+
+[source,java]
+----
+div.list().forEach(uiElement -> {});
+div.list().stream().forEach(uiElement -> {});
+----
+
+== Empty elements
+
+To prevent null pointers or any other exception that will break you program flow, you can use and empty UiElement using `createEmpty()` of `UiElementFinder`.
+
+[source,java]
+----
+UiElement empty = createEmpty(Locator);
+----
+
+All interactive operations on this element will do nothing, all wait methods will be false and all assertions will fail.
+
+
+== Sensitive Data
+
+Sensitive data, such as passwords, can be displayed obfuscated in the logs during the actions type and sendKeys.
+
+[source,java]
+----
+UiElement sensitiveElement = findById("secret").sensitiveData();
+----
+Only the placeholder * is logged in the report instead of the real value.
+
+== Trace elements hierarchy
+
+In most cases, elements are part of a view hierarchy. The `Nameable` interface provides some methods to retrieve this information.
+
+[source,java]
+----
+Nameable parent = element.getParent();
+----
+
+A parent could be any `PageObject` like `UiElement`, `Component` or `Page`.
+
+NOTE: Be aware that `getParent()` could return `NULL`, when the element has been created without a hierarchy or the element is a `Page`. So you should always perform a null or `instanceof` check.
+
+If you want to trace the hierarchy beginning from top-down, you can use the `traceAncestors()` method.
+
+[source,java]
+----
+element.traceAncestors(ancestor -> true);
+----
+
+When the given `Predicate` return `FALSE`, the tracing will stop.
+
+NOTE: This will not supply the calling element.

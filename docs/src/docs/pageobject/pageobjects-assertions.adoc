@@ -1,0 +1,14 @@
+= Assertions
+
+A Page instance also provides an assertions interface similar to UiElements.
+
+[source,java]
+----
+ResultPage resultPage = PAGE_FACTORY.createPage(ResultPage.class);
+
+// Expect the current WebDriver url
+page.expect().url().endsWith("input.html").is(true);
+
+// Expect the page title
+page.expect().title("Search results");
+----

@@ -1,0 +1,43 @@
+= Logging
+
+The log configuration prints out to `System.out` by default.
+If you want to have more control over several log levels of classes, add a `log4j2.xml` to your `resources/`.
+
+.debug level in log4j2.xml
+[source, xml]
+----
+include::../../res/log4j2.xml[]
+----
+
+You can also change the root log level from the command line via.
+[source, bash]
+----
+-Dlog4j.level=DEBUG
+----
+
+NOTE: The shown `log4j2.xml` sets the `INFO` level for the package `org.asynchttpclient`. Otherwise Selenium 4 spams the logs with request/response information.
+
+== Log own messages
+
+The `Loggable` interface provide some logging features and always uses the current instance class as logger name.
+
+[source,java]
+----
+class MyClass implements Loggable {
+
+    public void doSomething() {
+        log().info("Do something");
+    }
+}
+----
+
+Which results in a log message similar to
+
+[source]
+----
+[main][INFO][MCID:xyz][SCID:abc]: MyClass - Do something
+----
+
+The markers `MCID` and `SCID` are referencing to the current MethodContext respectively SessionContext ID.
+
+NOTE: Important messages can be prompted to the Report. See <<Priority Messages, here>> for more details.

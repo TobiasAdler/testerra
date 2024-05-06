@@ -1,0 +1,13 @@
+= Annotations for Report adjustment
+
+include::../properties/property-attributes.adoc[]
+To improve the readability and clarity of the report there are several annotations for marking the test class and test methods,
+which are described in the following paragraph as well as in <<#Fails, @Fails>>, <<#Retry, @Retry>> and <<#NoRetry, @NoRetry>>.
+
+== @TestClassContext
+With this annotation you can set the test context for the given test class. There two attributes for adjustments.
+
+* name: name of the context, default = `""`
+* mode: `TestClassContext.Mode.ONE_FOR_ALL` or `TestClassContext.Mode.ONE_FOR_EACH`, default = `TestClassContext.Mode.ONE_FOR_ALL`
+
+The Executed tests are then shown in the classes overview of the report as a entry labeled with `name` from `@TestClassContext`.

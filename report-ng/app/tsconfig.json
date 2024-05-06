@@ -1,0 +1,19 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+        "target": "es6",
+        "module": "esnext",
+        "skipLibCheck": true,
+        "sourceMap": true,
+        "removeComments": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+        "lib": [
+            "es2019",
+            "dom"
+        ],
+        "moduleResolution": "node",
+        "baseUrl": "src"
+    }
+}

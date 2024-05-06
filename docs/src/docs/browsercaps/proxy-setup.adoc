@@ -1,0 +1,33 @@
+= Proxy setup
+
+If you want that the browser uses a proxy for the SUT, you can just configure that by default Selenium capabilities.
+
+IMPORTANT: Make sure that your WebDriver supports the Proxy-Capability. For example the MicrosoftWebDriver for Legacy Edge does not support proxy setup (see https://docs.microsoft.com/en-us/archive/microsoft-edge/legacy/developer/webdriver/[Edge WebDriver Capabilities]).
+
+NOTE: If you want to setup a proxy for the runtime environment but the browser, you have to follow the instructions at <<Using a proxy>>
+
+The following code setups a proxy based on the <<Using a proxy,System's proxy configuration>> and a custom proxy.
+[source,java]
+----
+import org.testng.annotations.BeforeSuite;
+import eu.tsystems.mms.tic.testframework.webdrivermanager.WebDriverManagerUtils;
+import eu.tsystems.mms.tic.testframework.webdrivermanager.WebDriverProxyUtils;
+import org.openqa.selenium.Proxy;
+
+public abstract class AbstractTest extends TesterraTest {
+
+    @BeforeSuite
+    public void proxySetup() {
+        WebDriverProxyUtils utils = new WebDriverProxyUtils();
+
+        Proxy otherProxy = utils.createHttpProxyFromUrl(
+            new URL("http://proxyUser:secretPassword@my-proxy:3128")
+        );
+        WEB_DRIVER_MANAGER.setUserAgentConfig(Browsers.chrome, (ChromeConfig) options -> {
+            options.setProxy(otherProxy);
+        });
+    }
+}
+----
+
+NOTE: `WebDriverProxyUtils.getDefaultHttpProxy()` only returns the proxy configuration for HTTP, HTTPS and non-proxy connections.

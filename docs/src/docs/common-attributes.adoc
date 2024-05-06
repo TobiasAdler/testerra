@@ -1,0 +1,2 @@
+// Platform badge with link
+:platform_badge: image:PLATFORM-blue.svg[link="index.html#_opensource_and_platform"]

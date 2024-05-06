@@ -1,0 +1,139 @@
+[#Fails]
+= Expected Fails
+
+For known issues on the SUT the annotation `@Fails` can used to mark a test method as failing. These test cases are marked as `Expected failed` separately in the report.
+
+If tests are passed again, you get a note in the report to remove the `Fails` annotation.
+
+[source,java]
+----
+@Test
+@Fails()
+public void testItWillFail() {
+    Assert.assertTrue(false);
+}
+----
+
+[IMPORTANT]
+====
+The result is technically still a failure and only visually elevated to facilitate the evaluation of the report.
+
+Please keep in mind that `@Fails` has an impact to <<Failure Corridor>>.
+
+`@Fails` should not be used in conjunction with TestNG `@DataProvider` because the detected failure is ambiguous and might not be valid for all provided data.
+
+====
+
+== Add additional information
+
+You can add additional information to describe the cause in more detail. All information are added to the report.
+
+[source,java]
+----
+@Test
+@Fails(description="This test fails for reasons")
+public void testItWillFail() {
+    Assert.assertTrue(false);
+}
+----
+
+.Possible attributes for the `Fails` annotation
+[cols="2,5",options="header"]
+|===
+| Attribute | Description
+| description | Give more details about the failure.
+| ticketString | Define a bug ticket ID or URL as a String value.
+| intoReport | If `true` the failing test is shown as `Failed` instead of `Expected Failed` (default: `false`).
+| validator | Define a method that checks if the expected failure is valid.
+| validatorClass | Define a class for the `validator` method (optional)
+|===
+
+== Defining a validator
+
+With expected fails validators, you can define if the  `Expected Failed` state is valid or not.
+When the validator returns `true`, the expected failed status is valid, otherwise, the test will result in a regular `Failed`.
+You can use that feature to mark a test as expecting to fail for known circumstances, like browser or environment configurations.
+
+You define a validator the following way:
+
+[source, java]
+----
+public boolean browserCouldFail(MethodContext methodContext) {
+    return methodContext.readSessionContexts()
+                .map(SessionContext::getActualBrowserName)
+                .anyMatch(s -> s.contains("internet explorer"));
+}
+
+@Test
+@Fails(validator = "browserCouldFail")
+public void testSomething() {
+    // Perform your tests here
+}
+----
+
+Or as a class:
+
+[source, java]
+----
+public class FailsValidator {
+    public boolean expectedFailIsValid(MethodContext methodContext) {
+        return true;
+    }
+}
+----
+
+[source, java]
+----
+@Test
+@Fails(validatorClass = FailsValidator.class, validator = "expectedFailIsValid")
+public void testSomething() {
+    // Perform your tests here
+}
+----
+
+Example for expected fails on a specific Exceptions:
+
+[source, java]
+----
+public class FailsValidator {
+    public boolean expectedFailOnCertainException(MethodContext methodContext) {
+        // of course it's possible to check for more things inside the throwable
+        return methodContext.getTestNgResult().isPresent()
+                && methodContext.getTestNgResult().get().getThrowable()
+                   instanceof CertainException;
+    }
+}
+----
+
+[source, java]
+----
+@Test
+@Fails(validatorClass = FailsValidator.class, validator = "expectedFailOnCertainException")
+public void test_customFails() throws CertainException {
+    throw new CertainException();
+}
+----
+
+== Define conditions (`@deprecated`)
+
+You can specify some conditions for expected fails. Only if *_all_* conditions are true, the test is marked as `Expected failed`, otherwise as `Failed`.
+
+.The conditions are based on properties specified in `test.properties`
+[source, properties, subs="attributes"]
+----
+# test.properties
+environment=test
+country=de
+----
+
+.Usage of validFor in the `@Fails` annotation
+[source, java]
+----
+@Test
+@Fails(description = "Failing for environment 'test' and country 'de'", validFor = {"environment=test", "country=de"})
+public void testExpectedFailed() {
+    Assert.fail();
+}
+----
+
+If the test is executed with other values of the properties (like country=uk) the test will marked as `Failed`.

@@ -1,0 +1,263 @@
+= WebDriver sessions
+
+include::../properties/property-attributes.adoc[]
+
+Before you can use WebDriver sessions, you have to set up a Selenium-compatible server.
+
+== Setup remote sessions
+
+For using a remote Selenium server (e.g. a Selenium Grid) you only have to tell Testerra where it can be find.
+
+.Additional settings in test.properties
+[source,properties,subs="attributes"]
+----
+{selenium_server_url}=http://localhost:4444/wd/hub
+----
+
+NOTE: The browser support depends on the remote Selenium setup.
+
+== Create a local session (not recommended)
+
+Regularly, there is no reason to use local Selenium sessions based on binaries.
+We won't recommend using that, because we've experienced slightly differences between the local and remote behaviour.
+
+However, Testerra supports using local WebDrivers when you keep the property `{selenium_server_url}` empty. Selenium will search for browser binaries in your `PATH` environment variable.
+
+=== Manually configure WebDriver binaries
+
+- Search for your browser's Selenium driver online, like _selenium gecko driver_ for Firefox or _selenium crome driver_ for Chrome based browsers
+- Download your WebDriver binary from browser vendor's website to a local location
+- Make sure the driver version supports your installed browser
+- Since the properties are system properties, you need to put the location of the binaries to the `system.properties` file as mentioned in the <<Property files>> section.
+
+.system.properties
+[source,properties,subs="attributes"]
+----
+webdriver.gecko.driver="C:\\absolute\\path\to\\your\\geckodriver.exe"
+
+# or for other browsers
+webdriver.chrome.driver=...
+webdriver.edge.driver=...
+webdriver.ie.driver=...
+----
+
+You can also pass the WebDriver by the command line using
+```bash
+-Dwebdriver.gecko.driver=C:\absolute\path\to\your\geckodriver.exe
+```
+
+== Define browser type and version
+
+Before starting a WebDriver session, you should configure your desired browser like.
+
+[source,properties,subs="attributes"]
+----
+# Only browser type
+{browser_setting}=firefox
+
+# ... or with version
+{browser_setting}=firefox:65
+----
+
+[NOTE]
+====
+You can also define browser config via the settings `{browser}` and `{browser_version}`, but the version is independent from browser type.
+
+If you have different browser configurations in your Selenium grid you have to take care about the correct combination!
+====
+
+== Usage of WebDriver sessions
+
+On the first call of
+
+[source,java]
+----
+WebDriver driver = WEB_DRIVER_MANAGER.getWebDriver();
+----
+
+Selenium is triggered to open a new Browser windows with the defined URL.
+
+TIP: Use remote Selenium server as often as possible, also for development.
+So your project is independent of any `WebDriver` configuration and needed Webdriver binary files.
+
+For every other call of `getWebDriver()` in the *same test context* WebDriverManager always returns the existing session.
+
+This makes it possible to retrieve the current session in any context and avoids to force the user to pass the instance around.
+
+IMPORTANT: Please have a look to <<_handling_of_webdriver_instances, best practices of dealing with WebDriver instances>>
+
+== WebDriver lifecycle
+
+The default behaviour of Testerra's `WebDriverManager` is, to create unique WebDrivers for each thread and/or test method.
+That prevents issues in mutual interference between multiple threads.
+
+- Every WebDriver created in a thread, will be closed in this thread after the test method. See <<Use multiple sessions>>
+- You can keep a WebDriver in a thread over multiple methods. See <<Shared sessions in one thread>>
+- You can reuse WebDrivers by <<Shared sessions over different threads, sharing sessions over different threads>>
+
+== Use multiple sessions
+
+The WebDriverManager can handle more than one session in one test context.
+Every session has a defined session key.
+If no key was set, the default session key is called `default`.
+
+The following example creates two independent browser sessions:
+
+[source,java]
+----
+WebDriver driver = WEB_DRIVER_MANAGER.getWebDriver();
+WebDriver driverWindow2 = WEB_DRIVER_MANAGER.getWebDriver("window2");
+
+// Get the session key
+String key1 = WEB_DRIVER_MANAGER.getSessionKey(driver);        // key1 contains 'default'
+
+String key2 = WEB_DRIVER_MANAGER.getSessionKey(driverWindow2); // key2 contains 'window2'
+----
+
+== Close a session
+
+In most cases it is not needed to close your session manually.
+Testerra always closes all open session created in the thread at the end of a test method.
+
+Anyway, to close active sessions manually, do the following:
+
+[source,java]
+----
+// Shutdown a session by key
+WEB_DRIVER_MANAGER.shutdownSession(String);
+
+// Shutdown an explicit driver
+WEB_DRIVER_MANAGER.shutdownSession(WebDriver);
+
+// Close all active session in the current test context.
+WEB_DRIVER_MANAGER.shutdownAllThreadSessions();
+
+// Close all active session in all current parallel test threads.
+WEB_DRIVER_MANAGER.shutdownAllSessions()
+----
+
+[NOTE]
+====
+Please do not use Selenium provided methods to close `WebDriver` sessions.
+Have a further read in our known issue section: <<Close WebDriver sessions without WebDriverManager>>.
+====
+
+== Shared sessions in one thread
+
+You can reuse the WebDriver session over multiple methods in the same thread by setting the following property:
+
+.test.properties
+[source,properties,subs="attributes"]
+----
+{wdm_closewindows_aftertestmethods}=false
+----
+
+In this case, the sessions will not be closed until the very end of the execution.
+
+.Working with shared sessions
+[source,java]
+----
+@Test
+public void test1() {
+    WebDriver driver = WEB_DRIVER_MANAGER.getWebDriver();
+}
+
+@Test
+public void test2() {
+    // You get the already opened session from test1
+    WebDriver driver = WEB_DRIVER_MANAGER.getWebDriver();
+}
+----
+
+You can implement that behaviour in a slightly different way, by setting up your sessions in `@Before` methods and close them in `@After` methods, which gives you more control.
+
+.Setting up and closing sessions
+[source,java]
+----
+@BeforeMethod
+public void setupBrowser() {
+    DesktopWebDriverRequest request = new DesktopWebDriverRequest();
+    request.setShutdownAfterTest(false);
+    WebDriver driver = WEB_DRIVER_MANAGER.getWebDriver(request);
+}
+
+@Test
+public void test() {
+    WebDriver driver = WEB_DRIVER_MANAGER.getWebDriver();
+}
+
+@AfterMethod(alwaysRun = true)
+public void shutdownBrowser() {
+    WEB_DRIVER_MANAGER.shutdownAllThreadSessions();
+}
+----
+
+
+IMPORTANT: You can only reuse the session in the current thread.
+If you run parallel tests, you have no access to the session between parallel test threads.
+
+.Limitations of reusing shared sessions
+image::resuse_webdriver_sessions_1.png[]
+
+=== Special behaviour for config methods (*deprecated*)
+
+When you create a WebDriver in a **setup method** annotated with `@Before...` or `@After...`, the session will not be closed after that method, even when `{wdm_closewindows_aftertestmethods}` is true.
+
+.Reuse sessions in setup methods
+[source,java]
+----
+@BeforeMethod
+public void setupWebDriver() {
+    // This WebDriver will not be closed, because its a setup method
+    WebDriver driver = WEB_DRIVER_MANAGER.getWebDriver();
+}
+
+@Test
+public void test1() {
+    // You get the already opened session
+    WebDriver driver = WEB_DRIVER_MANAGER.getWebDriver();
+}
+----
+
+IMPORTANT: This implicit behaviour is `@deprecated` and will be removed in future versions.
+
+== Shared sessions over different threads
+
+To use a WebDriver session over different test threads, you need an _exclusive_ session.
+
+Exclusive sessions are identified by a special uuid, not by the standard session key.
+
+.Create exclusive browser sessions
+[source,java]
+----
+private static String uuid = null;
+
+@Test
+public void test1() {
+    WebDriver driver = WEB_DRIVER_MANAGER.getWebDriver();
+    uuid = WEB_DRIVER_MANAGER.makeExclusive(driver);
+}
+
+@Test
+public void test2() {
+    // Get the exclusive session
+    WebDriver driver = WEB_DRIVER_MANAGER.getWebDriver(uuid);
+}
+----
+
+.Reuse a session in different test threads
+image::resuse_webdriver_sessions_2.png[]
+
+[IMPORTANT]
+=====
+An exclusive session has an unlimited lifetime.
+You need do close this session manually.
+
+[source,java]
+----
+@AfterTest
+public void cleanup() {
+    WEB_DRIVER_MANAGER.shutdownSession(uuid);
+}
+----
+=====

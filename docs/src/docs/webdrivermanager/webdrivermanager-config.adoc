@@ -1,0 +1,65 @@
+= WebDriver configuration
+
+include::../properties/property-attributes.adoc[]
+
+A global configuration applies to all new sessions created by WebDriverManager.
+You can set a global configuration by.
+
+* Setting defaults as <<Property configuration, Properties>>
+* Configure the WebDriver <<Request configuration, on request>>
+
+== Property configuration
+
+The main configuration your WebDriver session is done in `test.properties`.
+
+The most important properties are:
+
+* `{browser_setting}` (or `{browser}`, `{browser_version}` and `{browser_platform}`)
+* `{baseurl}`
+* `{selenium_server_url}` (or `{selenium_server_host}` and `{selenium_server_port}`)
+
+The complete list of WebDriver properties can be found at <<WebdriverManager properties>>.
+
+== Request configuration
+
+If you only want to change the settings for one session, you can use `WebDriverRequest`.
+All defined attributes overrides the standard configuration.
+
+NOTE: If an attribute is not set, the global definition is used.
+
+[source,java,subs="attributes"]
+----
+DesktopWebDriverRequest myRequest = new DesktopWebDriverRequest();
+myRequest.setBaseUrl("http://example.org");
+myRequest.setBrowser(Browsers.firefox);
+myRequest.setBrowserVersion("66");
+myRequest.setSessionKey("mysession");
+myRequest.setWindowSize(new Dimension(2560,1440));  // {window_size}
+myRequest.setShutdownAfterTest(false);              // applies to all test method results
+                                                    // {wdm_closewindows_aftertestmethods}
+myRequest.setShutdownAfterTestFailed(false);        // applies only to failed test methods
+                                                    // {wdm_closewindows_onfailure}
+myRequest.setMaximizeBrowser(true);                 // {browser_maximize}
+
+WebDriver driver = WEB_DRIVER_MANAGER.getWebDriver(myRequest);
+----
+
+Via the `SessionContext` you can get the current configuration of a WebDriver session:
+
+[source,java]
+----
+Optional<SessionContext> sessionContext = WEB_DRIVER_MANAGER.getSessionContext(webDriver);
+// In case of a desktop browser you can cast to 'DesktopWebDriverRequest'
+// Be careful if you are using other session types like Appium sessions!
+DesktopWebDriverRequest webDriverRequest
+    = (DesktopWebDriverRequest) sessionContext.get().getWebDriverRequest();
+----
+
+NOTE: With `DesktopWebDriverRequest` you can also define <<Browser capabilities>>.
+
+== Configure with WebDriverManagerConfig (`@deprecated`)
+
+[IMPORTANT]
+====
+Do not use anymore set methods of `WebDriverManagerConfig` or `WEB_DRIVER_MANAGER.getConfig()`.
+====

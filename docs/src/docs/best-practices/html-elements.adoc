@@ -1,0 +1,65 @@
+= Working with HTML elements
+
+== Radio buttons
+
+Since radio buttons share the same name, as the following example shows
+
+[source,html]
+----
+<input type="radio" name="beverage" value="tee">
+<input type="radio" name="beverage" value="coffee">
+----
+
+It's not a good practice to select it `By.name`.
+It's better to select both options separately.
+
+[source,java]
+----
+// Good practice
+PreparedLocator locator = LOCATE.prepare("//input[@name='%s' and @value='%s']");
+UiElement teeOption = find(locator.with("beverage", "tee"));
+UiElement coffeeOption = find(locator.with("beverage", "coffee"));
+
+// Bad practice
+UiElement options = find(By.name("beverage"));
+----
+
+== Shadow Roots
+
+Modern web applications are allowed to use some third-party components, which can be integrated with Shadow DOM.
+This is the modern art of an iframe, because the components will be loaded via asynchronous JavaScript.
+
+Each embedded Shadow DOM component will have its own shadow root.
+To work with shadow root elements Testerra provide the method `shadowRoot()` on the `UiElement` class.
+
+NOTE: Testerra uses the Selenium 4 function `webElement.getShadowRoot()` to find child elements of a shadow root.
+
+Given the following HTML code snippet it will be easier how to get the corresponding `UiElement` of the Shadow DOM component.
+
+.HTML Code
+[source,html]
+----
+<body>
+    <div id="wrapper">
+    <!-- HTML code-->
+    <my-custom-shadow-root-element>
+    <!-- #shadowRoot -->
+        <div class="custom-component">
+            <input id="custom-component-login-name" name="name">
+        </div>
+    </my-custom-shadow-root-element>
+    </div>
+    <!-- HTML code-->
+</body>
+----
+
+.Java Code
+[source,java]
+----
+UiElement shadowRootElement = find(By.cssSelector("my-custom-shadow-root-element")).shadowRoot();
+// You have to use CSS selectors for child elements.
+UiElement input = shadowRootElement.find(By.cssSelector("#custom-component-login-name"));
+----
+
+IMPORTANT: To access child elements of shadow roots Selenium 4 only allows `By.cssSelector`. Using any other `By` Testerra occurs an exception.
+

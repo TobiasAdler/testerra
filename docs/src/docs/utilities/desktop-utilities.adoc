@@ -1,0 +1,61 @@
+= Desktop WebDriver utilities
+
+This utility class provides some additional methods to interact with web elements.
+
+[IMPORTANT]
+====
+Please consider this utility class as a fallback solution.
+
+It could be useful if elements are hidden or not reachable by Selenium.
+====
+
+== Supported actions
+
+.A short clickJS example
+[source,java]
+----
+UiElement element = find(By.id("label"));
+DesktopWebDriverUtils utils = new DesktopWebDriverUtils();
+
+utils.clickJS(element);
+----
+
+The following methods are supported:
+
+* clickJS()
+* rightClickJS()
+* doubleClickJS()
+* mouseOverJS()
+* clickAbsolute()
+* mouseOverAbsolute2Axis()
+* clickByImage()
+* mouseOverByImage()
+
+See <<Mouse over>> for more details about the `mouseOverAbsolute2Axis` method.
+
+== `mouseOver` vs. `mouseOverAbsolute2Axis`
+
+The `mouseOverAbsolute2Axis` method does not move the mouse pointer relativly from the last position.
+
+The following graphic shows 2 different mouse pointer paths beginning at the upper right image to the button 1.
+
+.Two possible mouse paths
+image::absolute2Axis.png[]
+
+The standard path (green) goes over a menu with hover effects.
+This could hide your target element.
+The blue path variant always goes first to the point (0,0) of the viewport, then in x and y direction the the target element.
+
+== By-image-utils
+
+The `clickByImage` and `mouseOverByImage` methods use the image recognition technology of sikuli-api to locate a part of the current web page using a screenshot placed in the `src/test/resources/` directory.
+After the referenced element was found, the operation is performed (either click or mouseOver) at the corresponding location, the center of the found screen region, using Selenium actions.
+
+These methods are useful, if some elements can not be accessed in the usual way, for example if they are inside a canvas or svg element.
+
+The following graphic shows the report-ng threads view with a selected testcase in the method filter, which is visible on the page but cannot be accessed since the chart is a canvas element.
+
+.A screenshot used to find the selected testcase
+image::by-image_threads-example.png[]
+
+With a screenshot of this method, in this case "test_expectedFailed.png", the by-image-utils can be used to find this element and perform a mouseOver or click action in the center of the test method bar.
